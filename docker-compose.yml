@@ -1,0 +1,43 @@
+version: "3.1"
+
+
+services:
+ keycloak-db:
+   image: postgres:16
+   command:
+     ["postgres", "-c", "log_statement=all", "-c", "log_destination=stderr"]
+   environment:
+     POSTGRES_DB: dbavito
+     POSTGRES_USER: avitouser
+     POSTGRES_PASSWORD: avitouser
+   ports:
+     - "54321:5432"
+   volumes:
+     - keycloak-db:/var/lib/postgresql/data
+
+
+ keycloak:
+   image: quay.io/keycloak/keycloak:26.1.0
+   environment:
+     KC_DB: postgres
+     KC_DB_URL_HOST: keycloak-db
+     KC_DB_USERNAME: avitouser
+     KC_DB_PASSWORD: avitouser
+     KC_DB_URL_PORT: 5432
+
+     KC_BOOTSTRAP_ADMIN_USERNAME: admin
+     KC_BOOTSTRAP_ADMIN_PASSWORD: admin1
+
+
+   command: start-dev
+   ports:
+     - "8085:8080"
+   depends_on:
+     - keycloak-db
+   restart: unless-stopped
+
+
+volumes:
+ keycloak-db:
+
+
