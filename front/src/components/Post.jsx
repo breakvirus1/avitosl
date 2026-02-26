@@ -1,53 +1,67 @@
 import { useKeycloak } from "@react-keycloak/web";
 import { useEffect, useState } from "react";
 
-type Post = {
-  name: string;
-  description: string;
-  price: number;
-};
-
 const Posts = () => {
   const { keycloak } = useKeycloak();
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState([]);
+  const [fetchFailed, setFetchFailed] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const getData = async () => {
       try {
         if (keycloak && keycloak.authenticated) {
+          setIsLoading(true);
+          console.log("Keycloak authenticated:", keycloak.authenticated);
           await keycloak?.updateToken();
+          console.log("Token updated");
           const req = await fetch("http://localhost:1291/api/posts", {
             headers: {
               ["Authorization"]: `Bearer ${keycloak.token}`,
             },
           });
-          setPosts(await req.json());
+          if (!req.ok) {
+            setFetchFailed(true);
+            setErrorMessage(`Failed to fetch posts: ${req.status} ${req.statusText}`);
+            console.log("Fetch failed");
+            return;
+          }
+          const data = await req.json();
+          console.log("Fetched data:", data);
+          setPosts(data);
         }
       } catch (e) {
         console.log("ERROR", e);
+        setFetchFailed(true);
+        setErrorMessage(`Нет постов`);
+      } finally {
+        setIsLoading(false);
       }
     };
     getData();
-  }, [keycloak?.authenticated]); 
+  }, [keycloak?.authenticated]);
 
   return (
     <>
       <div style={{ marginTop: "20px" }}>
-        {posts.map((post) => (
-          <div key={post.name} style={{ padding: "10px", marginBottom: "20px" }}>
-            <span>
-              {post.name} | {post.description} | price: {post.price}
-            </span>
-          </div>
-        ))}
+        {isLoading ? (
+          <div>Loading...</div>
+        ) : fetchFailed ? (
+          <div>{errorMessage}</div>
+        ) : posts.length === 0 ? (
+          <div>No posts available</div>
+        ) : (
+          posts.map((post) => (
+            <div key={post.name} style={{ padding: "10px", marginBottom: "20px" }}>
+              <span>
+                {post.name} | {post.description} | price: {post.price}
+              </span>
+            </div>
+          ))
+        )}
       </div>
-      <button
-        type="button"
-        className="text-blue-800"
-        onClick={() => keycloak.logout()}
-      >
-        Logout ({keycloak?.tokenParsed?.preferred_username})
-      </button>
+      
     </>
   );
 };

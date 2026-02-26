@@ -1,6 +1,6 @@
-import { useEffect } from "react";
+
 import "./App.css";
-import Cars from "./Cars";
+import Post from "./components/Post";
 import keycloak from "./keycloak";
 import { ReactKeycloakProvider, useKeycloak } from "@react-keycloak/web";
 
@@ -14,14 +14,20 @@ function App() {
 const SecuredContent = () => {
   const { keycloak } = useKeycloak();
   const isLoggedIn = keycloak.authenticated;
-  useEffect(() => {
-    if (isLoggedIn === false) keycloak?.login();
-  }, [isLoggedIn, keycloak]);
-  if (!isLoggedIn) return <div>Загрузка... Пожалуйста, подождите</div>;
+
+
+  if (!isLoggedIn) return (
+    <div>
+      <div>привет. это страница для авторизации</div>
+      <button onClick={() => keycloak.login()}>Войти</button>
+    </div>
+  );
   return (
     <div>
       <h2>Springboot приложение с Keycloak</h2>
-      <Cars />
+      пользователь: {keycloak.tokenParsed?.preferred_username}
+      <button onClick={() => keycloak.logout()}>Выйти</button>
+      <Post />
     </div>
   );
 };
