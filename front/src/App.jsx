@@ -1,8 +1,8 @@
-
 import "./App.css";
 import Post from "./components/Post";
 import keycloak from "./keycloak";
 import { ReactKeycloakProvider, useKeycloak } from "@react-keycloak/web";
+import { useEffect } from "react";
 
 function App() {
   return (
@@ -15,13 +15,14 @@ const SecuredContent = () => {
   const { keycloak } = useKeycloak();
   const isLoggedIn = keycloak.authenticated;
 
+  useEffect(() => {
+    if (!isLoggedIn) {
+      keycloak.login();
+    }
+  }, [isLoggedIn, keycloak]);
 
-  if (!isLoggedIn) return (
-    <div>
-      <div>привет. это страница для авторизации</div>
-      <button onClick={() => keycloak.login()}>Войти</button>
-    </div>
-  );
+  if (!isLoggedIn) return null; // Return null or a loading spinner while redirecting
+
   return (
     <div>
       <h2>Springboot приложение с Keycloak</h2>
