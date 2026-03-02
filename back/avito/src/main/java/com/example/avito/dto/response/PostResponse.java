@@ -16,6 +16,5 @@ public class PostResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String category;
-    private String location;
     private User user;
 }

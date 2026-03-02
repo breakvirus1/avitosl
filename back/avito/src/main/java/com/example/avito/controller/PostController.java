@@ -1,5 +1,6 @@
 package com.example.avito.controller;
 
+import com.example.avito.dto.response.PostResponse;
 import com.example.avito.entity.Post;
 import com.example.avito.service.PostService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,19 +19,19 @@ public class PostController {
 
     @Operation(summary = "создание нового объявления")
     @PostMapping
-    public Post createPost(@RequestBody Post post) {
+    public PostResponse createPost(@RequestBody Post post) {
         return postService.createPost(post);
     }
 
     @Operation(summary = "получение всех объявлений")
     @GetMapping
-    public List<Post> findAllPosts() {
+    public List<PostResponse> findAllPosts() {
         return postService.findAllPosts();
     }
 
     @Operation(summary = "поиск обьявлений по категориям")
     @GetMapping("/category/{category}")
-    public List<Post> findByCategory(@PathVariable String category) {
+    public List<PostResponse> findByCategory(@PathVariable String category) {
         return postService.findByCategory(category);
     }
 
@@ -38,7 +39,7 @@ public class PostController {
 
     @Operation(summary = "обновить обьявление")
     @PutMapping("/{id}")
-    public Post updatePost(@PathVariable Long id, @RequestBody Post post) {
+    public PostResponse updatePost(@PathVariable Long id, @RequestBody Post post) {
         return postService.updatePost(id, post);
     }
 
