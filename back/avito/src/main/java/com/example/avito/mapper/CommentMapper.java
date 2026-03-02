@@ -8,8 +8,8 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring", uses = {UserMapper.class, PostMapper.class})
 public interface CommentMapper {
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
+    // @Mapping(target = "id", ignore = true)
+    // @Mapping(target = "createdAt", ignore = true)
     Comment toEntity(CreateCommentRequest request);
 
     CommentResponse toResponse(Comment comment);

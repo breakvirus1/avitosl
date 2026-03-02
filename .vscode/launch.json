@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-AvitoApplication<avito>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.example.avito.AvitoApplication",
+            "projectName": "avito",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

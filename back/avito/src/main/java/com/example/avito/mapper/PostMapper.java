@@ -10,14 +10,14 @@ import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring", uses = {UserMapper.class})
 public interface PostMapper {
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
+    // @Mapping(target = "id", ignore = true)
+    // @Mapping(target = "createdAt", ignore = true)
+    // @Mapping(target = "updatedAt", ignore = true)
     Post toEntity(CreatePostRequest request);
 
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
+    // @Mapping(target = "id", ignore = true)
+    // @Mapping(target = "createdAt", ignore = true)
+    // @Mapping(target = "updatedAt", ignore = true)
     void updatePostFromRequest(UpdatePostRequest request, @MappingTarget Post post);
 
     PostResponse toResponse(Post post);

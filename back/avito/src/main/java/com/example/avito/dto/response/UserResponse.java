@@ -2,10 +2,13 @@ package com.example.avito.dto.response;
 
 import lombok.Data;
 
+
+
 @Data
 public class UserResponse {
     private Long id;
-    private String name;
+    private String username;
     private String email;
-
+    private String firstName;
+    private String lastName;
 }
