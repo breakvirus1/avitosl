@@ -1,9 +1,8 @@
-
 import "./App.css";
 import Post from "./components/Post";
 import keycloak from "./keycloak";
 import { ReactKeycloakProvider, useKeycloak } from "@react-keycloak/web";
-import { useEffect } from "react";
+
 function App() {
   return (
     <ReactKeycloakProvider authClient={keycloak}>
@@ -12,27 +11,16 @@ function App() {
   );
 }
 const SecuredContent = () => {
-  const { keycloak, initialized } = useKeycloak();
+  const { keycloak } = useKeycloak();
+  const isLoggedIn = keycloak.authenticated;
 
-  useEffect(() => {
-    if (!initialized) return;
 
-    if (!keycloak.authenticated) {
-      
-      keycloak.login().catch((err) => {
-        console.error("Ошибка :", err);
-      });
-    }
-  }, [initialized, keycloak?.authenticated]);
-
-  if (!initialized) {
-    return <div>Инициализация Keycloak...</div>;
-  }
-
-  if (!keycloak.authenticated) {
-    return <div>Перенаправление на страницу входа...</div>;
-  }
-
+  if (!isLoggedIn) return (
+    <div>
+      <div>привет. это страница для авторизации</div>
+      <button onClick={() => keycloak.login()}>Войти</button>
+    </div>
+  );
   return (
     <div>
       <h2>Spring Boot приложение с Keycloak</h2>
