@@ -81,4 +81,15 @@ public class UserService {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
     }
+
+    public void updateKeycloakId(Long userId, String keycloakId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+        user.setKeycloakId(keycloakId);
+        userRepository.save(user);
+    }
+
+    public User saveUser(User user) {
+        return userRepository.save(user);
+    }
 }

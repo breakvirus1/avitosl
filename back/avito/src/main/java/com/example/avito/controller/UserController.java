@@ -1,7 +1,11 @@
 package com.example.avito.controller;
 
+import com.example.avito.entity.Role;
+import com.example.avito.entity.User;
 import com.example.avito.response.UserResponse;
 import com.example.avito.security.UserSecurityService;
+import com.example.avito.service.KeycloakService;
+import com.example.avito.service.RoleService;
 import com.example.avito.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -11,6 +15,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +30,8 @@ public class UserController {
 
     private final UserService userService;
     private final UserSecurityService userSecurityService;
+    private final KeycloakService keycloakService;
+    private final RoleService roleService;
 
     @Operation(
         summary = "Получение пользователя по ID",
@@ -128,5 +135,59 @@ public class UserController {
             @PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(
+        summary = "Синхронизация пользователей из Keycloak",
+        description = "Загружает всех пользователей из Keycloak и сохраняет их в локальной базе данных. Требует роль ADMIN.",
+        responses = {
+            @ApiResponse(
+                responseCode = "200",
+                description = "Синхронизация завершена",
+                content = @Content(schema = @Schema(type = "string"))
+            ),
+            @ApiResponse(
+                responseCode = "403",
+                description = "Доступ запрещен"
+            )
+        }
+    )
+    @PostMapping("/sync-from-keycloak")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> syncUsersFromKeycloak() {
+        List<UserRepresentation> keycloakUsers = keycloakService.getAllUsers();
+        int syncedCount = 0;
+        int skippedCount = 0;
+        
+        Role userRole = roleService.getRoleByName("USER");
+        
+        for (UserRepresentation kcUser : keycloakUsers) {
+            try {
+
+                if (userService.findByEmail(kcUser.getEmail()).isPresent()) {
+                    skippedCount++;
+                    continue;
+                }
+
+                User user = User.builder()
+                        .email(kcUser.getEmail())
+                        .firstName(kcUser.getFirstName())
+                        .phoneNumber(kcUser.getAttributes() != null && kcUser.getAttributes().containsKey("phone")
+                            ? kcUser.getAttributes().get("phone").get(0)
+                            : null)
+                        .keycloakId(kcUser.getId())
+                        .enabled(kcUser.isEnabled())
+                        .build();
+                
+                user.getRoles().add(userRole);
+                userService.saveUser(user);
+                syncedCount++;
+            } catch (Exception e) {
+
+                System.err.println("Ошибка синхронизации пользователя " + kcUser.getEmail() + ": " + e.getMessage());
+            }
+        }
+        
+        return ResponseEntity.ok("Синхронизировано: " + syncedCount + ", пропущено: " + skippedCount);
     }
 }

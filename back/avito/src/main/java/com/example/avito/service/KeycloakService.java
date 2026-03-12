@@ -114,6 +114,15 @@ Response response = usersResource.create(user);
         return users.get(0);
     }
 
+    public List<UserRepresentation> getAllUsers() {
+        Keycloak keycloak = getKeycloakInstance();
+        RealmResource realmResource = keycloak.realm(realm);
+        UsersResource usersResource = realmResource.users();
+        
+        
+        return usersResource.list();
+    }
+
     public boolean validateToken(String token) {
         try {
             Keycloak keycloak = getKeycloakInstance();

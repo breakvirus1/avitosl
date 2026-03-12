@@ -2,10 +2,11 @@ package com.example.avito.controller;
 
 import com.example.avito.entity.User;
 import com.example.avito.mapper.UserMapper;
-import com.example.avito.request.LoginRequest;
 import com.example.avito.request.RegisterRequest;
 import com.example.avito.response.UserResponse;
+import com.example.avito.service.KeycloakService;
 import com.example.avito.service.UserService;
+import com.example.avito.security.UserSecurityService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -14,9 +15,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,8 +25,9 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final UserService userService;
-    private final AuthenticationManager authenticationManager;
     private final UserMapper userMapper;
+    private final UserSecurityService userSecurityService;
+    private final KeycloakService keycloakService;
 
     @Operation(
         summary = "Регистрация нового пользователя",
@@ -54,44 +53,27 @@ public class AuthController {
             return ResponseEntity.badRequest().body("Пользователь с таким email уже существует");
         }
 
-        UserResponse response = userService.createUser(request);
-        return ResponseEntity.ok(response);
-    }
-
-    @Operation(
-        summary = "Вход в систему",
-        description = "Аутентифицирует пользователя по email и паролю",
-        responses = {
-            @ApiResponse(
-                responseCode = "200",
-                description = "Успешная аутентификация",
-                content = @Content(schema = @Schema(implementation = UserResponse.class))
-            ),
-            @ApiResponse(
-                responseCode = "401",
-                description = "Неверные учетные данные"
-            )
-        }
-    )
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody
-        @Parameter(description = "Логин и пароль пользователя", required = true)
-        LoginRequest request) {
-
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+        String keycloakUserId = keycloakService.createUser(
+            request.getEmail(),
+            request.getFirstName(),
+            request.getPassword()
         );
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        
 
-        User user = userService.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
-        UserResponse response = userMapper.toResponse(user);
+        keycloakService.assignRoleToUser(keycloakUserId, "USER");
+
+
+        UserResponse response = userService.createUser(request);
+        
+
+        userService.updateKeycloakId(response.getId(), keycloakUserId);
+        
         return ResponseEntity.ok(response);
     }
 
     @Operation(
         summary = "Получение данных текущего пользователя",
-        description = "Возвращает информацию о текущем авторизованном пользователе",
+        description = "Возвращает информацию о текущем авторизованном пользователе на основе JWT токена",
         responses = {
             @ApiResponse(
                 responseCode = "200",
@@ -100,22 +82,17 @@ public class AuthController {
             ),
             @ApiResponse(
                 responseCode = "401",
-                description = "Пользователь не авторизован"
+                description = "Пользователь не аутентифицирован"
             )
         }
     )
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(401).body("Не авторизован");
-        }
-
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
-        User user = userService.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
-        UserResponse userResponse = userMapper.toResponse(user);
-        return ResponseEntity.ok(userResponse);
+        
+        User user = userSecurityService.getCurrentUserByEmail(email);
+        UserResponse response = userMapper.toResponse(user);
+        return ResponseEntity.ok(response);
     }
 }
