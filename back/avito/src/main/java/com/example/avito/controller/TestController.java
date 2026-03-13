@@ -45,7 +45,7 @@ public class TestController {
         }
     )
     @GetMapping("/api/user")
-    @PreAuthorize("hasRole('user')")
+    @PreAuthorize("hasRole('ROLE_USER')")
     public String userEndpoint() {
         return "Привет, обычный пользователь!";
     }
@@ -66,7 +66,7 @@ public class TestController {
         }
     )
     @GetMapping("/api/admin")
-    @PreAuthorize("hasRole('avitoadmin')")
+    @PreAuthorize("hasRole('ADMIN')")
     public String adminEndpoint() {
         return "Добро пожаловать, администратор!";
     }

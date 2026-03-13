@@ -78,13 +78,67 @@ public class WebSecurityConfig {
 
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
-        // Роли в Keycloak bearer-only токене находятся в resource_access.{client-id}.roles
-        grantedAuthoritiesConverter.setAuthoritiesClaimName("resource_access.avito-backend.roles");
-        grantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
-
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-        converter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
+        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            java.util.Set<org.springframework.security.core.GrantedAuthority> authorities = new java.util.HashSet<>();
+            
+            java.util.Map<String, Object> claims = jwt.getClaims();
+            
+            // Логируем все claims для отладки
+            org.slf4j.LoggerFactory.getLogger(WebSecurityConfig.class)
+                .debug("JWT claims: {}", claims);
+            
+            // realm_access.roles (реальные роли без префикса клиента)
+            if (claims.containsKey("realm_access")) {
+                java.util.Map<String, Object> realmAccess = (java.util.Map<String, Object>) claims.get("realm_access");
+                if (realmAccess.containsKey("roles")) {
+                    java.util.List<String> roles = (java.util.List<String>) realmAccess.get("roles");
+                    org.slf4j.LoggerFactory.getLogger(WebSecurityConfig.class)
+                        .debug("Found realm roles: {}", roles);
+                    for (String role : roles) {
+                        authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
+                    }
+                }
+            }
+            
+            // resource_access.*.roles - извлекаем роли из всех клиентов, убирая префикс клиента
+            if (claims.containsKey("resource_access")) {
+                java.util.Map<String, Object> resourceAccess = (java.util.Map<String, Object>) claims.get("resource_access");
+                for (java.util.Map.Entry<String, Object> entry : resourceAccess.entrySet()) {
+                    String clientName = entry.getKey();
+                    java.util.Map<String, Object> clientData = (java.util.Map<String, Object>) entry.getValue();
+                    if (clientData.containsKey("roles")) {
+                        java.util.List<String> roles = (java.util.List<String>) clientData.get("roles");
+                        org.slf4j.LoggerFactory.getLogger(WebSecurityConfig.class)
+                            .debug("Found client '{}' roles: {}", clientName, roles);
+                        for (String role : roles) {
+                            // Убираем префикс клиента, если роль начинается с него
+                            String cleanRole = role;
+                            if (role.toLowerCase().startsWith(clientName.toLowerCase())) {
+                                cleanRole = role.substring(clientName.length());
+                            }
+                            // Добавляем префикс ROLE_ для Spring Security
+                            authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + cleanRole.toUpperCase()));
+                        }
+                    }
+                }
+            }
+            
+            // groups
+            if (claims.containsKey("groups")) {
+                java.util.List<String> groups = (java.util.List<String>) claims.get("groups");
+                org.slf4j.LoggerFactory.getLogger(WebSecurityConfig.class)
+                    .debug("Found groups: {}", groups);
+                for (String group : groups) {
+                    authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + group.toUpperCase()));
+                }
+            }
+            
+            org.slf4j.LoggerFactory.getLogger(WebSecurityConfig.class)
+                .debug("Extracted authorities: {}", authorities);
+            
+            return authorities;
+        });
         return converter;
     }
 
