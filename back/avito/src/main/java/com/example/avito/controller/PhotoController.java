@@ -1,6 +1,5 @@
 package com.example.avito.controller;
 
-
 import com.example.avito.request.PhotoRequest;
 import com.example.avito.response.PhotoResponse;
 import com.example.avito.service.PhotoService;
@@ -11,9 +10,11 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,6 +22,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/photos")
 @RequiredArgsConstructor
+@Validated
 @Tag(name = "Фотографии", description = "API для управления фотографиями объявлений")
 public class PhotoController {
 
@@ -34,6 +36,10 @@ public class PhotoController {
                 responseCode = "200",
                 description = "Фотографии успешно получены",
                 content = @Content(schema = @Schema(implementation = PhotoResponse.class, type = "array"))
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "Внутренняя ошибка сервера"
             )
         }
     )
@@ -56,6 +62,10 @@ public class PhotoController {
             @ApiResponse(
                 responseCode = "404",
                 description = "Фотография не найдена"
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "Внутренняя ошибка сервера"
             )
         }
     )
@@ -82,6 +92,10 @@ public class PhotoController {
             @ApiResponse(
                 responseCode = "400",
                 description = "Ошибка валидации данных"
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "Внутренняя ошибка сервера"
             )
         }
     )
@@ -89,7 +103,7 @@ public class PhotoController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<PhotoResponse> addPhoto(@RequestBody
         @Parameter(description = "Данные фотографии", required = true)
-        PhotoRequest request) {
+        @Valid PhotoRequest request) {
         return ResponseEntity.ok(photoService.addPhoto(request));
     }
 
@@ -113,6 +127,10 @@ public class PhotoController {
             @ApiResponse(
                 responseCode = "404",
                 description = "Фотография не найдена"
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "Внутренняя ошибка сервера"
             )
         }
     )
@@ -123,7 +141,7 @@ public class PhotoController {
             @PathVariable Long id,
             @RequestBody
             @Parameter(description = "Обновленные данные фотографии", required = true)
-            PhotoRequest request) {
+            @Valid PhotoRequest request) {
         return ResponseEntity.ok(photoService.updatePhoto(id, request));
     }
 
@@ -146,6 +164,10 @@ public class PhotoController {
             @ApiResponse(
                 responseCode = "404",
                 description = "Фотография не найдена"
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "Внутренняя ошибка сервера"
             )
         }
     )
@@ -178,10 +200,14 @@ public class PhotoController {
             @ApiResponse(
                 responseCode = "404",
                 description = "Фотография не найдена"
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "Внутренняя ошибка сервера"
             )
         }
     )
-    @PostMapping("/{id}/set-primary")
+    @PutMapping("/{id}/set-primary")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<PhotoResponse> setPrimaryPhoto(
             @Parameter(description = "ID фотографии", in = ParameterIn.PATH, required = true, schema = @Schema(type = "integer"))

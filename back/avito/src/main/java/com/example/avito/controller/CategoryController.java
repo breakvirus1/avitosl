@@ -10,9 +10,11 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +22,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/categories")
 @RequiredArgsConstructor
+@Validated
 @Tag(name = "Категории", description = "API для управления категориями объявлений")
 public class CategoryController {
 
@@ -33,6 +36,10 @@ public class CategoryController {
                 responseCode = "200",
                 description = "Список категорий успешно получен",
                 content = @Content(schema = @Schema(implementation = CategoryResponse.class, type = "array"))
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "Внутренняя ошибка сервера"
             )
         }
     )
@@ -49,6 +56,10 @@ public class CategoryController {
                 responseCode = "200",
                 description = "Корневые категории успешно получены",
                 content = @Content(schema = @Schema(implementation = CategoryResponse.class, type = "array"))
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "Внутренняя ошибка сервера"
             )
         }
     )
@@ -69,6 +80,10 @@ public class CategoryController {
             @ApiResponse(
                 responseCode = "404",
                 description = "Родительская категория не найдена"
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "Внутренняя ошибка сервера"
             )
         }
     )
@@ -91,6 +106,10 @@ public class CategoryController {
             @ApiResponse(
                 responseCode = "404",
                 description = "Категория не найдена"
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "Внутренняя ошибка сервера"
             )
         }
     )
@@ -117,6 +136,10 @@ public class CategoryController {
             @ApiResponse(
                 responseCode = "403",
                 description = "Доступ запрещен. Требуется роль администратора"
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "Внутренняя ошибка сервера"
             )
         }
     )
@@ -124,7 +147,7 @@ public class CategoryController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CategoryResponse> createCategory(@RequestBody
         @Parameter(description = "Данные категории", required = true)
-        CategoryRequest request) {
+        @Valid CategoryRequest request) {
         return ResponseEntity.ok(categoryService.createCategory(request));
     }
 
@@ -148,6 +171,10 @@ public class CategoryController {
             @ApiResponse(
                 responseCode = "404",
                 description = "Категория не найдена"
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "Внутренняя ошибка сервера"
             )
         }
     )
@@ -158,7 +185,7 @@ public class CategoryController {
             @PathVariable Long id,
             @RequestBody
             @Parameter(description = "Обновленные данные категории", required = true)
-            CategoryRequest request) {
+            @Valid CategoryRequest request) {
         return ResponseEntity.ok(categoryService.updateCategory(id, request));
     }
 
@@ -177,6 +204,10 @@ public class CategoryController {
             @ApiResponse(
                 responseCode = "404",
                 description = "Категория не найдена"
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "Внутренняя ошибка сервера"
             )
         }
     )

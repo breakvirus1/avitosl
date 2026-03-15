@@ -3,6 +3,8 @@ package com.example.avito.service;
 import com.example.avito.entity.Comment;
 import com.example.avito.entity.Post;
 import com.example.avito.entity.User;
+import com.example.avito.exception.AccessDeniedException;
+import com.example.avito.exception.NotFoundException;
 import com.example.avito.mapper.CommentMapper;
 import com.example.avito.repository.CommentRepository;
 import com.example.avito.repository.PostRepository;
@@ -24,7 +26,7 @@ public class CommentService {
 
     public CommentResponse createComment(CommentRequest request, User author) {
         Post post = postRepository.findById(request.getPostId())
-                .orElseThrow(() -> new RuntimeException("Объявление не найдено"));
+                .orElseThrow(() -> new NotFoundException("Объявление не найдено"));
 
         Comment comment = Comment.builder()
                 .text(request.getText())
@@ -46,10 +48,10 @@ public class CommentService {
 
     public CommentResponse updateComment(Long id, CommentRequest request, User author) {
         Comment comment = commentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Комментарий не найден"));
+                .orElseThrow(() -> new NotFoundException("Комментарий не найден"));
 
         if (!comment.getAuthor().getId().equals(author.getId())) {
-            throw new RuntimeException("Вы не можете редактировать этот комментарий");
+            throw new AccessDeniedException("Вы не можете редактировать этот комментарий");
         }
 
         comment.setText(request.getText());
@@ -59,10 +61,10 @@ public class CommentService {
 
     public void deleteComment(Long id, User author) {
         Comment comment = commentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Комментарий не найден"));
+                .orElseThrow(() -> new NotFoundException("Комментарий не найден"));
 
         if (!comment.getAuthor().getId().equals(author.getId())) {
-            throw new RuntimeException("Вы не можете удалить этот комментарий");
+            throw new AccessDeniedException("Вы не можете удалить этот комментарий");
         }
 
         commentRepository.delete(comment);
@@ -70,7 +72,7 @@ public class CommentService {
 
     public CommentResponse getCommentById(Long id) {
         Comment comment = commentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Комментарий не найден"));
+                .orElseThrow(() -> new NotFoundException("Комментарий не найден"));
         return commentMapper.toResponse(comment);
     }
 }

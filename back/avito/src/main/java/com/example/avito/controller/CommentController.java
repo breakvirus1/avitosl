@@ -12,11 +12,13 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,6 +26,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/comments")
 @RequiredArgsConstructor
+@Validated
 @Tag(name = "Комментарии", description = "API для управления комментариями к объявлениям")
 public class CommentController {
 
@@ -38,6 +41,10 @@ public class CommentController {
                 responseCode = "200",
                 description = "Комментарии успешно получены",
                 content = @Content(schema = @Schema(implementation = CommentResponse.class, type = "array"))
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "Внутренняя ошибка сервера"
             )
         }
     )
@@ -60,6 +67,10 @@ public class CommentController {
             @ApiResponse(
                 responseCode = "403",
                 description = "Доступ запрещен. Требуется роль администратора"
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "Внутренняя ошибка сервера"
             )
         }
     )
@@ -83,6 +94,10 @@ public class CommentController {
             @ApiResponse(
                 responseCode = "404",
                 description = "Комментарий не найден"
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "Внутренняя ошибка сервера"
             )
         }
     )
@@ -109,6 +124,10 @@ public class CommentController {
             @ApiResponse(
                 responseCode = "400",
                 description = "Ошибка валидации данных"
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "Внутренняя ошибка сервера"
             )
         }
     )
@@ -116,7 +135,7 @@ public class CommentController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<CommentResponse> createComment(@RequestBody
         @Parameter(description = "Данные комментария", required = true)
-        CommentRequest request) {
+        @Valid CommentRequest request) {
         User author = getCurrentUser();
         return ResponseEntity.ok(commentService.createComment(request, author));
     }
@@ -141,6 +160,10 @@ public class CommentController {
             @ApiResponse(
                 responseCode = "404",
                 description = "Комментарий не найден"
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "Внутренняя ошибка сервера"
             )
         }
     )
@@ -151,7 +174,7 @@ public class CommentController {
             @PathVariable Long id,
             @RequestBody
             @Parameter(description = "Обновленные данные комментария", required = true)
-            CommentRequest request) {
+            @Valid CommentRequest request) {
         User author = getCurrentUser();
         return ResponseEntity.ok(commentService.updateComment(id, request, author));
     }
@@ -175,6 +198,10 @@ public class CommentController {
             @ApiResponse(
                 responseCode = "404",
                 description = "Комментарий не найден"
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "Внутренняя ошибка сервера"
             )
         }
     )
@@ -191,7 +218,6 @@ public class CommentController {
     private User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
-        return userService.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+        return userService.getUserByEmail(email);
     }
 }

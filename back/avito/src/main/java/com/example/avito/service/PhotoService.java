@@ -2,6 +2,7 @@ package com.example.avito.service;
 
 import com.example.avito.entity.Photo;
 import com.example.avito.entity.Post;
+import com.example.avito.exception.NotFoundException;
 import com.example.avito.mapper.PhotoMapper;
 import com.example.avito.repository.PhotoRepository;
 import com.example.avito.repository.PostRepository;
@@ -23,7 +24,7 @@ public class PhotoService {
 
     public PhotoResponse addPhoto(PhotoRequest request) {
         Post post = postRepository.findById(request.getPostId())
-                .orElseThrow(() -> new RuntimeException("Объявление не найдено"));
+                .orElseThrow(() -> new NotFoundException("Объявление не найдено"));
 
         Photo photo = Photo.builder()
                 .url(request.getUrl())
@@ -41,13 +42,13 @@ public class PhotoService {
 
     public PhotoResponse getPhotoById(Long id) {
         Photo photo = photoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Фото не найдено"));
+                .orElseThrow(() -> new NotFoundException("Фото не найдено"));
         return photoMapper.toResponse(photo);
     }
 
     public PhotoResponse updatePhoto(Long id, PhotoRequest request) {
         Photo photo = photoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Фото не найдено"));
+                .orElseThrow(() -> new NotFoundException("Фото не найдено"));
 
         photo.setUrl(request.getUrl());
         photo.setPrimary(request.getPrimary() != null ? request.getPrimary() : false);
@@ -62,7 +63,7 @@ public class PhotoService {
 
     public PhotoResponse setPrimaryPhoto(Long photoId) {
         Photo photo = photoRepository.findById(photoId)
-                .orElseThrow(() -> new RuntimeException("Фото не найдено"));
+                .orElseThrow(() -> new NotFoundException("Фото не найдено"));
 
         Long postId = photo.getPost().getId();
         photoRepository.findByPostIdAndPrimaryTrue(postId).forEach(p -> {

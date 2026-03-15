@@ -18,7 +18,7 @@
 		<java.version>21</java.version>
 		<keycloak.version>26.0.8</keycloak.version>
 		<org.mapstruct.version>1.6.3</org.mapstruct.version>
-		<springdoc-openapi.version>2.6.0</springdoc-openapi.version>
+		<springdoc-openapi.version>2.7.0</springdoc-openapi.version>
 		<postgres.version>42.7.8</postgres.version>
 		<lombok.version>1.18.34</lombok.version>
 		<spring-boot.version>3.5.11</spring-boot.version>	
@@ -138,6 +138,19 @@
 							<artifactId>lombok</artifactId>
 						</exclude>
 					</excludes>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.flywaydb</groupId>
+				<artifactId>flyway-maven-plugin</artifactId>
+				<version>9.22.3</version>
+				<configuration>
+					<url>jdbc:postgresql://localhost:5433/avitodb</url>
+					<user>user</user>
+					<password>111111</password>
+					<locations>
+						<location>filesystem:src/main/resources/db/migration</location>
+					</locations>
 				</configuration>
 			</plugin>
 		</plugins>

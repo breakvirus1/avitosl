@@ -1,6 +1,7 @@
 package com.example.avito.service;
 
 import com.example.avito.entity.Category;
+import com.example.avito.exception.NotFoundException;
 import com.example.avito.mapper.CategoryMapper;
 import com.example.avito.repository.CategoryRepository;
 import com.example.avito.request.CategoryRequest;
@@ -25,7 +26,7 @@ public class CategoryService {
 
         if (request.getParentId() != null) {
             Category parent = categoryRepository.findById(request.getParentId())
-                    .orElseThrow(() -> new RuntimeException("Родительская категория не найдена"));
+                    .orElseThrow(() -> new NotFoundException("Родительская категория не найдена"));
             category.setParent(parent);
         }
 
@@ -47,19 +48,19 @@ public class CategoryService {
 
     public CategoryResponse getCategoryById(Long id) {
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Категория не найдена"));
+                .orElseThrow(() -> new NotFoundException("Категория не найдена"));
         return categoryMapper.toResponse(category);
     }
 
     public CategoryResponse updateCategory(Long id, CategoryRequest request) {
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Категория не найдена"));
+                .orElseThrow(() -> new NotFoundException("Категория не найдена"));
 
         category.setName(request.getName());
 
         if (request.getParentId() != null) {
             Category parent = categoryRepository.findById(request.getParentId())
-                    .orElseThrow(() -> new RuntimeException("Родительская категория не найдена"));
+                    .orElseThrow(() -> new NotFoundException("Родительская категория не найдена"));
             category.setParent(parent);
         } else {
             category.setParent(null);

@@ -2,6 +2,8 @@ package com.example.avito.service;
 
 import com.example.avito.entity.Role;
 import com.example.avito.entity.User;
+import com.example.avito.exception.ConflictException;
+import com.example.avito.exception.NotFoundException;
 import com.example.avito.mapper.UserMapper;
 import com.example.avito.repository.RoleRepository;
 import com.example.avito.repository.UserRepository;
@@ -25,7 +27,7 @@ public class UserService {
 
     public UserResponse createUser(RegisterRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new RuntimeException("Пользователь с таким email уже существует");
+            throw new ConflictException("Пользователь с таким email уже существует");
         }
 
         User user = User.builder()
@@ -37,7 +39,7 @@ public class UserService {
                 .build();
 
         Role userRole = roleRepository.findByName("USER")
-                .orElseThrow(() -> new RuntimeException("Роль USER не найдена"));
+                .orElseThrow(() -> new NotFoundException("Роль USER не найдена"));
         user.getRoles().add(userRole);
 
         user = userRepository.save(user);
@@ -54,7 +56,7 @@ public class UserService {
 
     public UserResponse updateUser(Long id, RegisterRequest request) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
 
         user.setFirstName(request.getFirstName());
         user.setPhoneNumber(request.getPhoneNumber());
@@ -73,18 +75,18 @@ public class UserService {
 
     public UserResponse getUserById(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
         return userMapper.toResponse(user);
     }
 
     public User getUserByEmail(String email) {
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
     }
 
     public void updateKeycloakId(Long userId, String keycloakId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
         user.setKeycloakId(keycloakId);
         userRepository.save(user);
     }

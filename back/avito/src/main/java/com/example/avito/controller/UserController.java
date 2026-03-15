@@ -14,10 +14,12 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,6 +27,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
+@Validated
 @Tag(name = "Пользователи", description = "API для управления пользователями")
 public class UserController {
 
@@ -45,6 +48,10 @@ public class UserController {
             @ApiResponse(
                 responseCode = "404",
                 description = "Пользователь не найден"
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "Внутренняя ошибка сервера"
             )
         }
     )
@@ -67,6 +74,10 @@ public class UserController {
             @ApiResponse(
                 responseCode = "403",
                 description = "Доступ запрещен. Требуется роль администратора"
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "Внутренняя ошибка сервера"
             )
         }
     )
@@ -96,6 +107,10 @@ public class UserController {
             @ApiResponse(
                 responseCode = "404",
                 description = "Пользователь не найден"
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "Внутренняя ошибка сервера"
             )
         }
     )
@@ -106,7 +121,7 @@ public class UserController {
             @PathVariable Long id,
             @RequestBody
             @Parameter(description = "Обновленные данные пользователя", required = true)
-            com.example.avito.request.RegisterRequest request) {
+            @Valid com.example.avito.request.RegisterRequest request) {
         return ResponseEntity.ok(userService.updateUser(id, request));
     }
 
@@ -125,6 +140,10 @@ public class UserController {
             @ApiResponse(
                 responseCode = "404",
                 description = "Пользователь не найден"
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "Внутренняя ошибка сервера"
             )
         }
     )
@@ -149,6 +168,10 @@ public class UserController {
             @ApiResponse(
                 responseCode = "403",
                 description = "Доступ запрещен"
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "Внутренняя ошибка сервера"
             )
         }
     )
@@ -163,7 +186,6 @@ public class UserController {
         
         for (UserRepresentation kcUser : keycloakUsers) {
             try {
-
                 if (userService.findByEmail(kcUser.getEmail()).isPresent()) {
                     skippedCount++;
                     continue;
@@ -183,8 +205,7 @@ public class UserController {
                 userService.saveUser(user);
                 syncedCount++;
             } catch (Exception e) {
-
-                System.err.println("Ошибка синхронизации пользователя " + kcUser.getEmail() + ": " + e.getMessage());
+                // Пропускаем пользователя при ошибке
             }
         }
         

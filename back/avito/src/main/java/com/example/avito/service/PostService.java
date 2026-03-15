@@ -1,6 +1,8 @@
 package com.example.avito.service;
 
 import com.example.avito.entity.*;
+import com.example.avito.exception.AccessDeniedException;
+import com.example.avito.exception.NotFoundException;
 import com.example.avito.mapper.PostMapper;
 import com.example.avito.repository.*;
 import com.example.avito.request.PostRequest;
@@ -70,16 +72,16 @@ public class PostService {
 
     public PostResponse getPostById(Long id) {
         Post post = postRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Объявление не найдено"));
+                .orElseThrow(() -> new NotFoundException("Объявление не найдено"));
         return postMapper.toResponse(post);
     }
 
     public PostResponse updatePost(Long id, PostRequest request, User author) {
         Post post = postRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Объявление не найдено"));
+                .orElseThrow(() -> new NotFoundException("Объявление не найдено"));
 
         if (!post.getAuthor().getId().equals(author.getId())) {
-            throw new RuntimeException("Вы не можете редактировать это объявление");
+            throw new AccessDeniedException("Вы не можете редактировать это объявление");
         }
 
         post.setTitle(request.getTitle());
@@ -98,10 +100,10 @@ public class PostService {
 
     public void deletePost(Long id, User author) {
         Post post = postRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Объявление не найдено"));
+                .orElseThrow(() -> new NotFoundException("Объявление не найдено"));
 
         if (!post.getAuthor().getId().equals(author.getId())) {
-            throw new RuntimeException("Вы не можете удалить это объявление");
+            throw new AccessDeniedException("Вы не можете удалить это объявление");
         }
 
         postRepository.delete(post);
