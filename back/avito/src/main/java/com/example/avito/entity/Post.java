@@ -44,14 +44,13 @@ public class Post {
     @JsonIgnore
     private User author;
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(
-        name = "post_categories",
-        joinColumns = @JoinColumn(name = "post_id"),
-        inverseJoinColumns = @JoinColumn(name = "category_id")
-    )
-    @Builder.Default
-    private List<Category> categories = new ArrayList<>();
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subcategory_id", nullable = false)
+    private Subcategory subcategory;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
@@ -78,18 +77,6 @@ public class Post {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
-    }
-
-    public void addCategory(Category category) {
-        if (!categories.contains(category)) {
-            categories.add(category);
-            category.getPosts().add(this);
-        }
-    }
-
-    public void removeCategory(Category category) {
-        categories.remove(category);
-        category.getPosts().remove(this);
     }
 
     public void addPhoto(Photo photo) {

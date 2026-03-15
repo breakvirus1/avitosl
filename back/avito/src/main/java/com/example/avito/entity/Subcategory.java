@@ -8,17 +8,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.EqualsAndHashCode;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Entity
-@Table(name = "categories")
+@Table(name = "subcategories")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class Category {
+public class Subcategory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,9 +25,10 @@ public class Category {
     @Column(nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<Subcategory> subcategories = new ArrayList<>();
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = false)
+    @JsonIgnore
+    private Category category;
 
     @Column(name = "created_at")
     private java.time.LocalDateTime createdAt;
@@ -47,15 +45,5 @@ public class Category {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = java.time.LocalDateTime.now();
-    }
-
-    public void addSubcategory(Subcategory subcategory) {
-        subcategories.add(subcategory);
-        subcategory.setCategory(this);
-    }
-
-    public void removeSubcategory(Subcategory subcategory) {
-        subcategories.remove(subcategory);
-        subcategory.setCategory(null);
     }
 }

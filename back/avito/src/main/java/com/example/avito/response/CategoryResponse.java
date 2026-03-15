@@ -1,5 +1,6 @@
 package com.example.avito.response;
 
+import com.example.avito.response.SubcategoryResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,6 +15,5 @@ import java.util.List;
 public class CategoryResponse {
     private Long id;
     private String name;
-    private Long parentId;
-    private List<CategoryResponse> children;
+    private List<SubcategoryResponse> subcategories;
 }

@@ -30,7 +30,7 @@ public class CategoryController {
 
     @Operation(
         summary = "Получение всех категорий",
-        description = "Возвращает полный список всех категорий в иерархической структуре",
+        description = "Возвращает полный список всех категорий с их подкатегориями",
         responses = {
             @ApiResponse(
                 responseCode = "200",
@@ -46,52 +46,6 @@ public class CategoryController {
     @GetMapping
     public ResponseEntity<List<CategoryResponse>> getAllCategories() {
         return ResponseEntity.ok(categoryService.getAllCategories());
-    }
-
-    @Operation(
-        summary = "Получение корневых категорий",
-        description = "Возвращает список категорий верхнего уровня (без родительских категорий)",
-        responses = {
-            @ApiResponse(
-                responseCode = "200",
-                description = "Корневые категории успешно получены",
-                content = @Content(schema = @Schema(implementation = CategoryResponse.class, type = "array"))
-            ),
-            @ApiResponse(
-                responseCode = "500",
-                description = "Внутренняя ошибка сервера"
-            )
-        }
-    )
-    @GetMapping("/root")
-    public ResponseEntity<List<CategoryResponse>> getRootCategories() {
-        return ResponseEntity.ok(categoryService.getRootCategories());
-    }
-
-    @Operation(
-        summary = "Получение подкатегорий",
-        description = "Возвращает список дочерних категорий для указанной родительской категории",
-        responses = {
-            @ApiResponse(
-                responseCode = "200",
-                description = "Подкатегории успешно получены",
-                content = @Content(schema = @Schema(implementation = CategoryResponse.class, type = "array"))
-            ),
-            @ApiResponse(
-                responseCode = "404",
-                description = "Родительская категория не найдена"
-            ),
-            @ApiResponse(
-                responseCode = "500",
-                description = "Внутренняя ошибка сервера"
-            )
-        }
-    )
-    @GetMapping("/{id}/children")
-    public ResponseEntity<List<CategoryResponse>> getChildCategories(
-            @Parameter(description = "ID родительской категории", in = ParameterIn.PATH, required = true, schema = @Schema(type = "integer"))
-            @PathVariable Long id) {
-        return ResponseEntity.ok(categoryService.getChildCategories(id));
     }
 
     @Operation(
@@ -122,7 +76,7 @@ public class CategoryController {
 
     @Operation(
         summary = "Создание новой категории",
-        description = "Создает новую категорию. Доступно только администраторам",
+        description = "Создает новую категорию с возможностью добавления подкатегорий. Доступно только администраторам",
         responses = {
             @ApiResponse(
                 responseCode = "200",
@@ -146,14 +100,14 @@ public class CategoryController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CategoryResponse> createCategory(@RequestBody
-        @Parameter(description = "Данные категории", required = true)
+        @Parameter(description = "Данные категории (с возможностью указания подкатегорий)", required = true)
         @Valid CategoryRequest request) {
         return ResponseEntity.ok(categoryService.createCategory(request));
     }
 
     @Operation(
         summary = "Обновление категории",
-        description = "Обновляет информацию о категории. Доступно только администраторам",
+        description = "Обновляет информацию о категории и ее подкатегорий. Доступно только администраторам",
         responses = {
             @ApiResponse(
                 responseCode = "200",
@@ -191,7 +145,7 @@ public class CategoryController {
 
     @Operation(
         summary = "Удаление категории",
-        description = "Удаляет категорию из системы. Доступно только администраторам",
+        description = "Удаляет категорию и все ее подкатегории из системы. Доступно только администраторам",
         responses = {
             @ApiResponse(
                 responseCode = "204",

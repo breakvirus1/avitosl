@@ -21,7 +21,8 @@ public class PostResponse {
     private BigDecimal price;
     private boolean active;
     private UserResponse author;
-    private List<CategoryResponse> categories;
+    private CategoryResponse category;
+    private SubcategoryResponse subcategory;
     private List<Photo> photos;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

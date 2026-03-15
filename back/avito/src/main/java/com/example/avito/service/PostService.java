@@ -29,6 +29,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
+    private final SubcategoryRepository subcategoryRepository;
     private final PhotoRepository photoRepository;
     private final PostMapper postMapper;
 
@@ -41,9 +42,18 @@ public class PostService {
                 .active(true)
                 .build();
 
-        if (request.getCategoryIds() != null) {
-            List<Category> categories = categoryRepository.findAllById(request.getCategoryIds());
-            categories.forEach(post::addCategory);
+        // Устанавливаем категорию
+        if (request.getCategoryId() != null) {
+            Category category = categoryRepository.findById(request.getCategoryId())
+                    .orElseThrow(() -> new NotFoundException("Категория не найдена"));
+            post.setCategory(category);
+        }
+
+        // Устанавливаем подкатегорию
+        if (request.getSubcategoryId() != null) {
+            Subcategory subcategory = subcategoryRepository.findById(request.getSubcategoryId())
+                    .orElseThrow(() -> new NotFoundException("Подкатегория не найдена"));
+            post.setSubcategory(subcategory);
         }
 
         Post savedPost = postRepository.save(post);
@@ -88,10 +98,18 @@ public class PostService {
         post.setDescription(request.getDescription());
         post.setPrice(request.getPrice() != null ? BigDecimal.valueOf(request.getPrice()) : null);
 
-        post.getCategories().clear();
-        if (request.getCategoryIds() != null) {
-            List<Category> categories = categoryRepository.findAllById(request.getCategoryIds());
-            categories.forEach(post::addCategory);
+        // Обновляем категорию
+        if (request.getCategoryId() != null) {
+            Category category = categoryRepository.findById(request.getCategoryId())
+                    .orElseThrow(() -> new NotFoundException("Категория не найдена"));
+            post.setCategory(category);
+        }
+
+        // Обновляем подкатегорию
+        if (request.getSubcategoryId() != null) {
+            Subcategory subcategory = subcategoryRepository.findById(request.getSubcategoryId())
+                    .orElseThrow(() -> new NotFoundException("Подкатегория не найдена"));
+            post.setSubcategory(subcategory);
         }
 
         post = postRepository.save(post);
@@ -109,7 +127,7 @@ public class PostService {
         postRepository.delete(post);
     }
 
-    public Page<PostResponse> searchPosts(String title, BigDecimal minPrice, BigDecimal maxPrice, Long categoryId, Pageable pageable) {
+    public Page<PostResponse> searchPosts(String title, BigDecimal minPrice, BigDecimal maxPrice, Long subcategoryId, Pageable pageable) {
         return postRepository.findAll((root, query, cb) -> {
             List<Predicate> predicates = new java.util.ArrayList<>();
 
@@ -127,10 +145,9 @@ public class PostService {
                 predicates.add(cb.lessThanOrEqualTo(root.get("price"), maxPrice));
             }
 
-            if (categoryId != null) {
-                Join<Post, Category> join = root.join("categories");
-                predicates.add(cb.equal(join.get("id"), categoryId));
-                query.distinct(true);
+            if (subcategoryId != null) {
+                Join<Post, Subcategory> join = root.join("subcategory");
+                predicates.add(cb.equal(join.get("id"), subcategoryId));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

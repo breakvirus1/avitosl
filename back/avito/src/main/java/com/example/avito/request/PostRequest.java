@@ -24,8 +24,11 @@ public class PostRequest {
 
     private Double price;
 
-    @NotNull(message = "Список категорий обязателен")
-    private List<Long> categoryIds;
+    @NotNull(message = "ID категории обязателен")
+    private Long categoryId;
+
+    @NotNull(message = "ID подкатегории обязателен")
+    private Long subcategoryId;
 
     private List<String> photoUrls;
 }

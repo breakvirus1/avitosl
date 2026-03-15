@@ -2,6 +2,8 @@ package com.example.avito.service;
 
 import com.example.avito.entity.Photo;
 import com.example.avito.entity.Post;
+import com.example.avito.entity.User;
+import com.example.avito.exception.AccessDeniedException;
 import com.example.avito.exception.NotFoundException;
 import com.example.avito.mapper.PhotoMapper;
 import com.example.avito.repository.PhotoRepository;
@@ -46,9 +48,15 @@ public class PhotoService {
         return photoMapper.toResponse(photo);
     }
 
-    public PhotoResponse updatePhoto(Long id, PhotoRequest request) {
+    public PhotoResponse updatePhoto(Long id, PhotoRequest request, User currentUser) {
         Photo photo = photoRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Фото не найдено"));
+
+        // Проверяем, что пользователь является автором поста, к которому принадлежит фото
+        Post post = photo.getPost();
+        if (!post.getAuthor().getId().equals(currentUser.getId())) {
+            throw new AccessDeniedException("Вы не можете редактировать это фото");
+        }
 
         photo.setUrl(request.getUrl());
         photo.setPrimary(request.getPrimary() != null ? request.getPrimary() : false);
@@ -57,13 +65,28 @@ public class PhotoService {
         return photoMapper.toResponse(photo);
     }
 
-    public void deletePhoto(Long id) {
-        photoRepository.deleteById(id);
+    public void deletePhoto(Long id, User currentUser) {
+        Photo photo = photoRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Фото не найдено"));
+
+        // Проверяем, что пользователь является автором поста, к которому принадлежит фото
+        Post post = photo.getPost();
+        if (!post.getAuthor().getId().equals(currentUser.getId())) {
+            throw new AccessDeniedException("Вы не можете удалить это фото");
+        }
+
+        photoRepository.delete(photo);
     }
 
-    public PhotoResponse setPrimaryPhoto(Long photoId) {
+    public PhotoResponse setPrimaryPhoto(Long photoId, User currentUser) {
         Photo photo = photoRepository.findById(photoId)
                 .orElseThrow(() -> new NotFoundException("Фото не найдено"));
+
+        // Проверяем, что пользователь является автором поста, к которому принадлежит фото
+        Post post = photo.getPost();
+        if (!post.getAuthor().getId().equals(currentUser.getId())) {
+            throw new AccessDeniedException("Вы не можете изменить эту фотографию");
+        }
 
         Long postId = photo.getPost().getId();
         photoRepository.findByPostIdAndPrimaryTrue(postId).forEach(p -> {

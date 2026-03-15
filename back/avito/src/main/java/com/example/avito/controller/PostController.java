@@ -89,8 +89,8 @@ public class PostController {
             @RequestParam(required = false) BigDecimal minPrice,
             @Parameter(description = "Максимальная цена", in = ParameterIn.QUERY, schema = @Schema(type = "number"))
             @RequestParam(required = false) BigDecimal maxPrice,
-            @Parameter(description = "ID категории", in = ParameterIn.QUERY, schema = @Schema(type = "integer"))
-            @RequestParam(required = false) Long categoryId,
+            @Parameter(description = "ID подкатегории", in = ParameterIn.QUERY, schema = @Schema(type = "integer"))
+            @RequestParam(required = false) Long subcategoryId,
             @Parameter(description = "Номер страницы (начиная с 0)", in = ParameterIn.QUERY, schema = @Schema(type = "integer", defaultValue = "0"))
             @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Количество элементов на странице", in = ParameterIn.QUERY, schema = @Schema(type = "integer", defaultValue = "20"))
@@ -100,7 +100,7 @@ public class PostController {
     ) {
         Sort.Order order = new Sort.Order(Sort.Direction.fromString(sort[1]), sort[0]);
         Pageable pageable = PageRequest.of(page, size, Sort.by(order));
-        return ResponseEntity.ok(postService.searchPosts(title, minPrice, maxPrice, categoryId, pageable));
+        return ResponseEntity.ok(postService.searchPosts(title, minPrice, maxPrice, subcategoryId, pageable));
     }
 
     @Operation(

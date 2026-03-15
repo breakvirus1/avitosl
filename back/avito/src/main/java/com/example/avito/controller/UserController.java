@@ -3,7 +3,6 @@ package com.example.avito.controller;
 import com.example.avito.entity.Role;
 import com.example.avito.entity.User;
 import com.example.avito.response.UserResponse;
-import com.example.avito.security.UserSecurityService;
 import com.example.avito.service.KeycloakService;
 import com.example.avito.service.RoleService;
 import com.example.avito.service.UserService;
@@ -32,7 +31,6 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
-    private final UserSecurityService userSecurityService;
     private final KeycloakService keycloakService;
     private final RoleService roleService;
 
@@ -199,6 +197,7 @@ public class UserController {
                             : null)
                         .keycloakId(kcUser.getId())
                         .enabled(kcUser.isEnabled())
+                        .password("KEYCLOAK_AUTH") // Dummy password for Keycloak-synced users
                         .build();
                 
                 user.getRoles().add(userRole);

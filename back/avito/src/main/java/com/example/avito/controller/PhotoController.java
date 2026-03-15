@@ -1,8 +1,10 @@
 package com.example.avito.controller;
 
+import com.example.avito.entity.User;
 import com.example.avito.request.PhotoRequest;
 import com.example.avito.response.PhotoResponse;
 import com.example.avito.service.PhotoService;
+import com.example.avito.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -14,6 +16,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,6 +31,7 @@ import java.util.List;
 public class PhotoController {
 
     private final PhotoService photoService;
+    private final UserService userService;
 
     @Operation(
         summary = "Получение фотографий объявления",
@@ -142,7 +147,8 @@ public class PhotoController {
             @RequestBody
             @Parameter(description = "Обновленные данные фотографии", required = true)
             @Valid PhotoRequest request) {
-        return ResponseEntity.ok(photoService.updatePhoto(id, request));
+        User currentUser = getCurrentUser();
+        return ResponseEntity.ok(photoService.updatePhoto(id, request, currentUser));
     }
 
     @Operation(
@@ -176,7 +182,8 @@ public class PhotoController {
     public ResponseEntity<Void> deletePhoto(
             @Parameter(description = "ID фотографии", in = ParameterIn.PATH, required = true, schema = @Schema(type = "integer"))
             @PathVariable Long id) {
-        photoService.deletePhoto(id);
+        User currentUser = getCurrentUser();
+        photoService.deletePhoto(id, currentUser);
         return ResponseEntity.noContent().build();
     }
 
@@ -212,6 +219,13 @@ public class PhotoController {
     public ResponseEntity<PhotoResponse> setPrimaryPhoto(
             @Parameter(description = "ID фотографии", in = ParameterIn.PATH, required = true, schema = @Schema(type = "integer"))
             @PathVariable Long id) {
-        return ResponseEntity.ok(photoService.setPrimaryPhoto(id));
+        User currentUser = getCurrentUser();
+        return ResponseEntity.ok(photoService.setPrimaryPhoto(id, currentUser));
+    }
+
+    private User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        return userService.getUserByEmail(email);
     }
 }

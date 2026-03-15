@@ -15,5 +15,5 @@ public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificat
     Page<Post> findByAuthorId(Long authorId, Pageable pageable);
     List<Post> findByAuthorId(Long authorId);
     List<Post> findByActiveTrue();
-    List<Post> findByCategories_Id(Long categoryId);
+    List<Post> findBySubcategory_Id(Long subcategoryId);
 }

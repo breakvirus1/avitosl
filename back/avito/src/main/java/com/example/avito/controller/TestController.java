@@ -45,7 +45,7 @@ public class TestController {
         }
     )
     @GetMapping("/api/user")
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     public String userEndpoint() {
         return "Привет, обычный пользователь!";
     }
