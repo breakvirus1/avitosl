@@ -101,11 +101,13 @@ public class AuthController {
     )
     @GetMapping("/me")
     public ResponseEntity<UserResponse> getCurrentUser() {
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
+        UserSecurityService.UserInfo userInfo = userSecurityService.getCurrentUserInfo();
         
-        User user = userSecurityService.getCurrentUserByEmail(email);
-        UserResponse response = userMapper.toResponse(user);
+        // Build UserResponse from JWT data (no database lookup)
+        UserResponse response = UserResponse.builder()
+                .email(userInfo.getEmail())
+                .firstName(userInfo.getFirstName())
+                .build();
         return ResponseEntity.ok(response);
     }
     

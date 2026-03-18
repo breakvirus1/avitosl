@@ -3,8 +3,8 @@ package com.example.avito.controller;
 import com.example.avito.entity.User;
 import com.example.avito.request.PostRequest;
 import com.example.avito.response.PostResponse;
+import com.example.avito.security.UserSecurityService;
 import com.example.avito.service.PostService;
-import com.example.avito.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -35,7 +35,11 @@ import java.math.BigDecimal;
 public class PostController {
 
     private final PostService postService;
-    private final UserService userService;
+    private final UserSecurityService userSecurityService;
+
+    private User getCurrentUser() {
+        return userSecurityService.getCurrentUser();
+    }
 
     @Operation(
         summary = "Получение списка всех объявлений",
@@ -157,8 +161,8 @@ public class PostController {
     public ResponseEntity<PostResponse> createPost(@RequestBody
         @Parameter(description = "Данные объявления", required = true)
         @Valid PostRequest request) {
-        User author = getCurrentUser();
-        return ResponseEntity.ok(postService.createPost(request, author));
+        User currentUser = getCurrentUser();
+        return ResponseEntity.ok(postService.createPost(request, currentUser));
     }
 
     @Operation(
@@ -196,8 +200,8 @@ public class PostController {
             @RequestBody
             @Parameter(description = "Обновленные данные объявления", required = true)
             @Valid PostRequest request) {
-        User author = getCurrentUser();
-        return ResponseEntity.ok(postService.updatePost(id, request, author));
+        User currentUser = getCurrentUser();
+        return ResponseEntity.ok(postService.updatePost(id, request, currentUser));
     }
 
     @Operation(
@@ -231,14 +235,8 @@ public class PostController {
     public ResponseEntity<Void> deletePost(
             @Parameter(description = "ID объявления", in = ParameterIn.PATH, required = true, schema = @Schema(type = "integer"))
             @PathVariable Long id) {
-        User author = getCurrentUser();
-        postService.deletePost(id, author);
+        User currentUser = getCurrentUser();
+        postService.deletePost(id, currentUser);
         return ResponseEntity.noContent().build();
-    }
-
-    private User getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        return userService.getUserByEmail(email);
     }
 }

@@ -3,8 +3,8 @@ package com.example.avito.controller;
 import com.example.avito.entity.User;
 import com.example.avito.request.CommentRequest;
 import com.example.avito.response.CommentResponse;
+import com.example.avito.security.UserSecurityService;
 import com.example.avito.service.CommentService;
-import com.example.avito.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -31,7 +31,11 @@ import java.util.List;
 public class CommentController {
 
     private final CommentService commentService;
-    private final UserService userService;
+    private final UserSecurityService userSecurityService;
+
+    private User getCurrentUser() {
+        return userSecurityService.getCurrentUser();
+    }
 
     @Operation(
         summary = "Получение комментариев к объявлению",
@@ -210,14 +214,8 @@ public class CommentController {
     public ResponseEntity<Void> deleteComment(
             @Parameter(description = "ID комментария", in = ParameterIn.PATH, required = true, schema = @Schema(type = "integer"))
             @PathVariable Long id) {
-        User author = getCurrentUser();
-        commentService.deleteComment(id, author);
+        User currentUser = getCurrentUser();
+        commentService.deleteComment(id, currentUser);
         return ResponseEntity.noContent().build();
-    }
-
-    private User getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        return userService.getUserByEmail(email);
     }
 }

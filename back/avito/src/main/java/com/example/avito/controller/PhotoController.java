@@ -3,8 +3,8 @@ package com.example.avito.controller;
 import com.example.avito.entity.User;
 import com.example.avito.request.PhotoRequest;
 import com.example.avito.response.PhotoResponse;
+import com.example.avito.security.UserSecurityService;
 import com.example.avito.service.PhotoService;
-import com.example.avito.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -31,7 +31,11 @@ import java.util.List;
 public class PhotoController {
 
     private final PhotoService photoService;
-    private final UserService userService;
+    private final UserSecurityService userSecurityService;
+
+    private User getCurrentUser() {
+        return userSecurityService.getCurrentUser();
+    }
 
     @Operation(
         summary = "Получение фотографий объявления",
@@ -221,11 +225,5 @@ public class PhotoController {
             @PathVariable Long id) {
         User currentUser = getCurrentUser();
         return ResponseEntity.ok(photoService.setPrimaryPhoto(id, currentUser));
-    }
-
-    private User getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        return userService.getUserByEmail(email);
     }
 }

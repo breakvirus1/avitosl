@@ -19,14 +19,22 @@ function PostForm({ onFinish, categories }) {
       newErrors.name = 'Название должно содержать минимум 3 символа'
     }
 
-    if (formData.description && formData.description.length > 1000) {
-      newErrors.description = 'Описание не должно превышать 1000 символов'
+    if (formData.description && formData.description.length > 5000) {
+      newErrors.description = 'Описание не должно превышать 5000 символов'
     }
 
-    if (!formData.price) {
+    if (!formData.price && formData.price !== 0) {
       newErrors.price = 'Пожалуйста, укажите цену!'
-    } else if (parseFloat(formData.price) < 0) {
+    } else if (formData.price && parseFloat(formData.price) < 0) {
       newErrors.price = 'Цена не может быть отрицательной'
+    }
+
+    if (!formData.categoryId) {
+      newErrors.categoryId = 'Пожалуйста, выберите категорию!'
+    }
+
+    if (!formData.subcategoryId) {
+      newErrors.subcategoryId = 'Пожалуйста, выберите подкатегорию!'
     }
 
     setErrors(newErrors)
@@ -46,11 +54,11 @@ function PostForm({ onFinish, categories }) {
     if (validateForm()) {
       try {
         const postData = {
-          name: formData.name.trim(),
+          title: formData.name.trim(),
           description: formData.description || '',
           price: parseFloat(formData.price),
-          categoryId: formData.categoryId ? parseInt(formData.categoryId) : null,
-          subcategoryId: formData.subcategoryId ? parseInt(formData.subcategoryId) : null
+          categoryId: formData.categoryId ? parseInt(formData.categoryId) : undefined,
+          subcategoryId: formData.subcategoryId ? parseInt(formData.subcategoryId) : undefined
         }
         await onFinish(postData)
         setFormData({
@@ -178,6 +186,7 @@ function PostForm({ onFinish, categories }) {
             <option key={cat.id} value={cat.id}>{cat.name}</option>
           ))}
         </select>
+        {errors.categoryId && <div style={errorStyle}>{errors.categoryId}</div>}
       </div>
 
       <div style={{ marginBottom: '16px' }}>
@@ -194,6 +203,7 @@ function PostForm({ onFinish, categories }) {
             <option key={sub.id} value={sub.id}>{sub.name}</option>
           ))}
         </select>
+        {errors.subcategoryId && <div style={errorStyle}>{errors.subcategoryId}</div>}
       </div>
 
       <button type="submit" style={buttonStyle}>
