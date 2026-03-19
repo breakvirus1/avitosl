@@ -44,7 +44,7 @@ public class FakeDataController {
         }
     )
     @PostMapping("/posts/{count}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<String> generateFakePosts(
             @Parameter(description = "Количество объявлений для создания", required = true, schema = @Schema(type = "integer", minimum = "1", maximum = "1000"))
             @PathVariable int count) {

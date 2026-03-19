@@ -1,97 +1,77 @@
 import React from 'react';
 import { useAuth } from '../hooks/useAuth';
-import PostForm from './PostForm.jsx';
 import PostList from './PostList.jsx';
+import { useNavigate } from 'react-router-dom';
 
 function Home() {
-  const [posts, setPosts] = React.useState([])
-  const [categories, setCategories] = React.useState([])
-  const [loading, setLoading] = React.useState(true)
-  const [error, setError] = React.useState(null)
+  const navigate = useNavigate();
+  const [posts, setPosts] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState(null);
   const [pagination, setPagination] = React.useState({
     currentPage: 0,
     pageSize: 20,
     totalElements: 0,
     totalPages: 0
-  })
-  const [userRoles, setUserRoles] = React.useState([])
-  const { isAuthenticated, apiService } = useAuth()
+  });
+  const [userRoles, setUserRoles] = React.useState([]);
+  const { isAuthenticated, apiService } = useAuth();
 
   const fetchPosts = async (page = 0, size = 20) => {
     try {
-      setLoading(true)
-      const response = await apiService.getPosts(page, size)
-      setPosts(response.data.content)
+      setLoading(true);
+      const response = await apiService.getPosts(page, size);
+      setPosts(response.data.content);
       setPagination({
         currentPage: page,
         pageSize: size,
         totalElements: response.data.totalElements,
         totalPages: response.data.totalPages
-      })
-      setError(null)
+      });
+      setError(null);
     } catch (err) {
-      console.error('Error fetching posts:', err)
-      setError(err.response?.data?.message || err.message || 'Failed to load posts')
+      console.error('Error fetching posts:', err);
+      setError(err.response?.data?.message || err.message || 'Failed to load posts');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
-
-  const fetchCategories = async () => {
-    try {
-      const response = await apiService.getCategories()
-      setCategories(response.data)
-    } catch (err) {
-      console.error('Error fetching categories:', err)
-    }
-  }
+  };
 
   const fetchRoles = async () => {
     try {
-      const response = await apiService.getRoles()
-      setUserRoles(response.data)
+      const response = await apiService.getRoles();
+      setUserRoles(response.data);
     } catch (err) {
-      console.error('Error fetching roles:', err)
+      console.error('Error fetching roles:', err);
     }
-  }
+  };
 
   React.useEffect(() => {
     if (isAuthenticated) {
-      fetchPosts(pagination.currentPage, pagination.pageSize)
-      fetchCategories()
-      fetchRoles()
+      fetchPosts(pagination.currentPage, pagination.pageSize);
+      fetchRoles();
     }
-  }, [isAuthenticated])
-
-  const handleCreatePost = async (postData) => {
-    try {
-      await apiService.createPost(postData)
-      await fetchPosts()
-    } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Failed to create post')
-      throw err
-    }
-  }
+  }, [isAuthenticated]);
 
   const handleDeletePost = async (postId) => {
     try {
-      await apiService.deletePost(postId)
-      await fetchPosts(pagination.currentPage, pagination.pageSize)
+      await apiService.deletePost(postId);
+      await fetchPosts(pagination.currentPage, pagination.pageSize);
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Failed to delete post')
+      setError(err.response?.data?.message || err.message || 'Failed to delete post');
     }
-  }
+  };
 
   const handlePageChange = (newPage) => {
-    fetchPosts(newPage, pagination.pageSize)
-  }
+    fetchPosts(newPage, pagination.pageSize);
+  };
 
   const hasRole = (roleName) => {
-    return userRoles.includes(roleName)
-  }
+    return userRoles.includes(roleName);
+  };
 
-  const isAdmin = hasRole('ADMIN')
-  const isUser = hasRole('USER')
+  const isAdmin = hasRole('ADMIN');
+  const isUser = hasRole('USER');
 
   return (
     <div>
@@ -113,7 +93,8 @@ function Home() {
             borderRadius: '6px',
             padding: '16px',
             marginBottom: '16px',
-            color: '#ff4d4f'
+            color: '#ff4d4f',
+            position: 'relative'
           }}>
             <strong>Ошибка</strong>
             <p style={{ margin: '8px 0 0 0' }}>{error}</p>
@@ -134,15 +115,44 @@ function Home() {
           </div>
         )}
 
+        <div style={{ marginBottom: '24px' }}>
+          <button
+            onClick={() => navigate('/create-post')}
+            style={{
+              padding: '10px 20px',
+              borderRadius: '4px',
+              border: 'none',
+              background: isAuthenticated ? '#1890ff' : '#d9d9d9',
+              color: isAuthenticated ? 'white' : '#000000d9',
+              cursor: isAuthenticated ? 'pointer' : 'not-allowed',
+              fontSize: '14px',
+              fontWeight: 500,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
+            disabled={!isAuthenticated}
+          >
+            <span>+</span> Создать объявление
+          </button>
+        </div>
+
         <div style={{ display: 'flex', gap: '24px' }}>
           <div style={{ flex: '0 0 25%' }}>
-            {isUser && (
-              <PostForm
-                onFinish={handleCreatePost}
-                categories={categories}
-              />
-            )}
-            {!isUser && (
+            {isUser ? (
+              <div style={{
+                background: '#e6f7ff',
+                border: '1px solid #91d5ff',
+                borderRadius: '6px',
+                padding: '16px',
+                color: '#1890ff'
+              }}>
+                <strong>Быстрая форма</strong>
+                <p style={{ margin: '8px 0 0 0', fontSize: '12px' }}>
+                  Используйте форму справа для быстрого создания объявления. Для расширенных опций перейдите на страницу создания.
+                </p>
+              </div>
+            ) : (
               <div style={{
                 background: '#fffbe6',
                 border: '1px solid #ffe58f',
@@ -168,7 +178,7 @@ function Home() {
         </div>
       </main>
     </div>
-  )
+  );
 }
 
-export default Home
+export default Home;

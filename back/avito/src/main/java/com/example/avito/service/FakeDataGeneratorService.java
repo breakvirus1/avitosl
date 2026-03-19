@@ -24,24 +24,26 @@ public class FakeDataGeneratorService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final PhotoRepository photoRepository;
-    private final RoleService roleService;
     private final KeycloakService keycloakService;
+    private final RoleService roleService;
 
     private final Faker faker = new Faker(new Locale("ru"));
     private final Random random = new Random();
 
     @Transactional
     public void generateFakePosts(int count) {
-        // Синхронизируем пользователей из Keycloak если их нет в базе
-        syncUsersFromKeycloakIfNeeded();
+        // Сначала синхронизируем пользователей из Keycloak
+        syncUsersFromKeycloak();
         
+        // Получаем всех пользователей из локальной базы
         List<User> users = userRepository.findAll();
+        
+        if (users.isEmpty()) {
+            throw new IllegalStateException("Нет пользователей в базе данных. Не удалось синхронизировать из Keycloak.");
+        }
+
         List<Category> categories = categoryRepository.findAll();
         List<Subcategory> allSubcategories = subcategoryRepository.findAll();
-
-        if (users.isEmpty()) {
-            throw new IllegalStateException("Нет пользователей в базе данных. Не удалось синхронизировать из Keycloak. Убедитесь, что Keycloak запущен и в нем есть пользователи.");
-        }
 
         if (categories.isEmpty() || allSubcategories.isEmpty()) {
             throw new IllegalStateException("Нет категорий или подкатегорий в базе данных. Сначала создайте категории и подкатегории.");
@@ -56,12 +58,13 @@ public class FakeDataGeneratorService {
                     .filter(sc -> sc.getCategory().getId().equals(randomCategory.getId()))
                     .toList();
             
+            Subcategory randomSubcategory;
             if (categorySubcategories.isEmpty()) {
-                // Если у категории нет подкатегорий, пропускаем или берем любую подкатегорию
-                continue;
+                // Если у категории нет подкатегорий, берем любую подкатегорию из всех
+                randomSubcategory = allSubcategories.get(random.nextInt(allSubcategories.size()));
+            } else {
+                randomSubcategory = categorySubcategories.get(random.nextInt(categorySubcategories.size()));
             }
-            
-            Subcategory randomSubcategory = categorySubcategories.get(random.nextInt(categorySubcategories.size()));
 
             Post post = Post.builder()
                     .title(faker.commerce().productName())
@@ -77,7 +80,7 @@ public class FakeDataGeneratorService {
 
             Post savedPost = postRepository.save(post);
 
-            // Добавляем случайное количество комментариев (0-5)
+            // Добавляем случайное количество комментариев (0-5) от случайного пользователя
             int commentCount = random.nextInt(6);
             for (int j = 0; j < commentCount; j++) {
                 User commentAuthor = users.get(random.nextInt(users.size()));
@@ -101,13 +104,10 @@ public class FakeDataGeneratorService {
     
     /**
      * Синхронизирует пользователей из Keycloak в локальную базу данных.
-     * Вызывается только если в базе нет пользователей.
+     * Получает всех пользователей из Keycloak и добавляет их в локальную базу,
+     * если они еще не существуют.
      */
-    private void syncUsersFromKeycloakIfNeeded() {
-        if (userRepository.count() > 0) {
-            return; // Пользователи уже есть, синхронизация не нужна
-        }
-        
+    private void syncUsersFromKeycloak() {
         try {
             List<UserRepresentation> keycloakUsers = keycloakService.getAllUsers();
             Role userRole = roleService.getRoleByName("USER");
@@ -115,10 +115,12 @@ public class FakeDataGeneratorService {
             int syncedCount = 0;
             for (UserRepresentation kcUser : keycloakUsers) {
                 try {
+                    // Проверяем, существует ли пользователь с таким email в базе
                     if (userRepository.findByEmail(kcUser.getEmail()).isPresent()) {
-                        continue;
+                        continue; // Пропускаем, уже есть
                     }
 
+                    // Создаем нового пользователя из данных Keycloak
                     User user = User.builder()
                             .email(kcUser.getEmail())
                             .firstName(kcUser.getFirstName())
@@ -141,11 +143,10 @@ public class FakeDataGeneratorService {
             
             if (syncedCount > 0) {
                 System.out.println("✅ Синхронизировано " + syncedCount + " пользователей из Keycloak");
-            } else {
-                System.out.println("⚠️ Не найдено пользователей в Keycloak для синхронизации. Убедитесь, что Keycloak запущен и содержит пользователей.");
             }
         } catch (Exception e) {
             System.err.println("⚠️ Не удалось синхронизировать пользователей из Keycloak: " + e.getMessage());
+            // Продолжаем выполнение - возможно пользователи уже есть в базе
         }
     }
 }

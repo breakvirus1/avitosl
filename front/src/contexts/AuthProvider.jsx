@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   login,
@@ -6,7 +6,8 @@ import {
   completeLogin,
   completeLogout,
   getUser,
-  removeUser
+  removeUser,
+  userManager
 } from '../oidc';
 import AuthApiService from '../services/auth-api';
 import { AuthContext } from './AuthContext';
@@ -111,13 +112,20 @@ export const AuthProvider = ({ children }) => {
     try {
       // Проверяем, не истек ли токен
       if (user.expired) {
-        console.log('Token expired, getting new user...');
-        const newUser = await getUser();
-        if (newUser) {
+        console.log('Token expired, attempting silent renew...');
+        try {
+          // Пытаемся обновить токен через silent renew
+          const newUser = await userManager.signinSilent();
           setUser(newUser);
           return newUser.access_token;
+        } catch (silentError) {
+          console.error('Silent renew failed:', silentError);
+          // Если silent renew не удался, очищаем пользователя и перенаправляем на логин
+          await removeUser();
+          setUser(null);
+          setIsAuthenticated(false);
+          return null;
         }
-        return null;
       }
       return user.access_token;
     } catch (err) {

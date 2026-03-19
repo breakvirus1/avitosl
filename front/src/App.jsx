@@ -4,6 +4,7 @@ import { AuthProvider } from './contexts/AuthProvider'
 import PrivateRoute from './components/PrivateRoute.jsx'
 import AuthBar from './components/AuthBar.jsx'
 import Home from './components/Home.jsx'
+import CreatePostPage from './components/CreatePostPage.jsx'
 import Callback from './components/Callback.jsx'
 
 function App() {
@@ -12,6 +13,7 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
+          <Route path="/create-post" element={<PrivateRoute><CreatePostPage /></PrivateRoute>} />
           <Route path="/callback" element={<Callback />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
