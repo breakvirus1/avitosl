@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   login,
@@ -18,6 +18,41 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Используем ref для гарантии однократной обработки callback в рамках сессии
+  const callbackProcessedRef = useRef(sessionStorage.getItem('callbackProcessed') === 'true');
+  
+  const setCallbackProcessed = (value) => {
+    callbackProcessedRef.current = value;
+    if (value) {
+      sessionStorage.setItem('callbackProcessed', 'true');
+    } else {
+      sessionStorage.removeItem('callbackProcessed');
+    }
+  };
+  
+  // Мьютекс для предотвращения параллельных вызовов signinSilent
+  const silentRenewInProgress = useRef(false);
+
+  useEffect(() => {
+    // Сбрасываем флаг обработки callback при монтировании, если не на callback странице
+    if (window.location.pathname !== '/callback' && window.location.pathname !== '/post-logout-callback') {
+      setCallbackProcessed(false);
+      callbackProcessedRef.current = false;
+    }
+
+    // Слушаем изменения sessionStorage из других вкладок
+    const handleStorageChange = (event) => {
+      if (event.key === 'callbackProcessed') {
+        callbackProcessedRef.current = event.newValue === 'true';
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   useEffect(() => {
     // Проверяем, есть ли сохраненный пользователь при загрузке
@@ -40,26 +75,33 @@ export const AuthProvider = ({ children }) => {
 
     // Обработка callback после логина/логаута
     const handleCallback = async () => {
-      if (window.location.pathname === '/callback') {
+      const isCallbackPage = window.location.pathname === '/callback';
+      const isLogoutCallbackPage = window.location.pathname === '/post-logout-callback';
+      
+      // Проверяем флаг в ref и sessionStorage для защиты от повторной обработки
+      if ((isCallbackPage || isLogoutCallbackPage) && !callbackProcessedRef.current) {
         try {
-          const user = await completeLogin();
-          setUser(user);
-          setIsAuthenticated(true);
-          navigate('/', { replace: true });
+          // Устанавливаем флаг в sessionStorage и ref ДО обработки
+          setCallbackProcessed(true);
+          callbackProcessedRef.current = true;
+          
+          if (isCallbackPage) {
+            const user = await completeLogin();
+            setUser(user);
+            setIsAuthenticated(true);
+            navigate('/', { replace: true });
+          } else {
+            await completeLogout();
+            navigate('/', { replace: true });
+          }
         } catch (err) {
-          console.error('Login callback failed:', err);
-          setError('Ошибка авторизации');
-          navigate('/', { replace: true });
-        }
-      }
-
-      if (window.location.pathname === '/post-logout-callback') {
-        try {
-          await completeLogout();
-        } catch (err) {
-          console.error('Logout callback failed:', err);
-        } finally {
-          navigate('/', { replace: true });
+          console.error(isCallbackPage ? 'Login callback failed:' : 'Logout callback failed:', err);
+          if (isCallbackPage) {
+            setError('Ошибка авторизации');
+            navigate('/', { replace: true });
+          } else {
+            navigate('/', { replace: true });
+          }
         }
       }
     };
@@ -94,6 +136,8 @@ export const AuthProvider = ({ children }) => {
 
   const handleLogout = async () => {
     try {
+      // Сбрасываем флаг обработки callback для следующего входа
+      setCallbackProcessed(false);
       await removeUser();
       setUser(null);
       setIsAuthenticated(false);
@@ -103,22 +147,45 @@ export const AuthProvider = ({ children }) => {
       // При ошибке все равно очищаем локальное состояние
       setUser(null);
       setIsAuthenticated(false);
+      setCallbackProcessed(false);
       navigate('/');
     }
   };
 
-  const getAccessToken = async () => {
-    if (!user) return null;
+  const getAccessToken = useCallback(async () => {
+    const currentUser = user;
+    if (!currentUser) return null;
     try {
       // Проверяем, не истек ли токен
-      if (user.expired) {
+      if (currentUser.expired) {
         console.log('Token expired, attempting silent renew...');
+        
+        // Если уже идет процесс обновления, ждем его завершения
+        if (silentRenewInProgress.current) {
+          console.log('Silent renew already in progress, waiting...');
+          return new Promise((resolve) => {
+            const checkInterval = setInterval(() => {
+              if (!silentRenewInProgress.current) {
+                clearInterval(checkInterval);
+                if (currentUser && !currentUser.expired) {
+                  resolve(currentUser.access_token);
+                } else {
+                  resolve(null);
+                }
+              }
+            }, 50);
+          });
+        }
+        
         try {
+          silentRenewInProgress.current = true;
           // Пытаемся обновить токен через silent renew
           const newUser = await userManager.signinSilent();
           setUser(newUser);
+          silentRenewInProgress.current = false;
           return newUser.access_token;
         } catch (silentError) {
+          silentRenewInProgress.current = false;
           console.error('Silent renew failed:', silentError);
           // Если silent renew не удался, очищаем пользователя и перенаправляем на логин
           await removeUser();
@@ -127,15 +194,15 @@ export const AuthProvider = ({ children }) => {
           return null;
         }
       }
-      return user.access_token;
+      return currentUser.access_token;
     } catch (err) {
       console.error('Get access token failed:', err);
       return null;
     }
-  };
+  }, [user]);
 
   const apiService = useMemo(() => {
-    return new AuthApiService(getAccessToken);
+    return new AuthApiService(() => getAccessToken());
   }, [getAccessToken]);
 
   const value = {

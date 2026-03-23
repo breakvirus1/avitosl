@@ -38,6 +38,10 @@ export const logout = async () => {
 export const completeLogin = async () => {
   try {
     const user = await userManager.signinRedirectCallback();
+    // Очищаем URL от кода авторизации после успешной обработки
+    if (window.history && window.history.replaceState) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
     return user;
   } catch (error) {
     console.error('Complete login error:', error);

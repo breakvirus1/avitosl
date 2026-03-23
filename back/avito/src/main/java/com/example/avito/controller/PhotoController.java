@@ -14,13 +14,21 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 @RestController
@@ -225,5 +233,73 @@ public class PhotoController {
             @PathVariable Long id) {
         User currentUser = getCurrentUser();
         return ResponseEntity.ok(photoService.setPrimaryPhoto(id, currentUser));
+    }
+
+    @Operation(
+        summary = "Загрузка файла",
+        description = "Загружает файл на сервер и возвращает URL. Требует аутентификации",
+        responses = {
+            @ApiResponse(
+                responseCode = "200",
+                description = "Файл успешно загружен",
+                content = @Content(schema = @Schema(implementation = PhotoResponse.class))
+            ),
+            @ApiResponse(
+                responseCode = "401",
+                description = "Пользователь не авторизован"
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "Внутренняя ошибка сервера"
+            )
+        }
+    )
+    @PostMapping(value = "/upload", consumes = {"multipart/form-data"})
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<PhotoResponse> uploadFile(
+            @Parameter(description = "ID объявления", in = ParameterIn.QUERY, required = true, schema = @Schema(type = "integer"))
+            @RequestParam("postId") Long postId,
+            @Parameter(description = "Файл для загрузки", required = true)
+            @RequestPart("file") MultipartFile file) {
+        User currentUser = getCurrentUser();
+        return ResponseEntity.ok(photoService.uploadFile(file, postId, currentUser));
+    }
+
+    @Operation(
+        summary = "Получение загруженного файла",
+        description = "Возвращает файл по указанному URL",
+        responses = {
+            @ApiResponse(
+                responseCode = "200",
+                description = "Файл успешно получен"
+            ),
+            @ApiResponse(
+                responseCode = "404",
+                description = "Файл не найден"
+            )
+        }
+    )
+    @GetMapping("/{id}/file")
+    @PreAuthorize("permitAll()")
+    public ResponseEntity<byte[]> getFile(
+            @Parameter(description = "ID фотографии", in = ParameterIn.PATH, required = true, schema = @Schema(type = "integer"))
+            @PathVariable Long id) {
+        PhotoResponse photo = photoService.getPhotoById(id);
+        String relativePath = photo.getUrl().startsWith("/") ? photo.getUrl().substring(1) : photo.getUrl();
+        String filePath = System.getProperty("user.dir") + File.separator + relativePath;
+        
+        try {
+            byte[] fileBytes = Files.readAllBytes(Paths.get(filePath));
+            String contentType = Files.probeContentType(Paths.get(filePath));
+            if (contentType == null) {
+                contentType = "application/octet-stream";
+            }
+            
+            return ResponseEntity.ok()
+                    .contentType(org.springframework.http.MediaType.parseMediaType(contentType))
+                    .body(fileBytes);
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Файл не найден");
+        }
     }
 }

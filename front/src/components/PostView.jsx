@@ -6,7 +6,7 @@ import './PostView.css';
 function PostView() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated, apiService } = useAuth();
+  const { isAuthenticated, apiService, user } = useAuth();
   const [post, setPost] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(null);
@@ -88,7 +88,7 @@ function PostView() {
     );
   }
 
-  const isOwner = post.author?.id === post.author?.id;
+  const isOwner = post.author?.keycloakId === user?.sub;
 
   return (
     <div className="post-view-container">
@@ -120,9 +120,9 @@ function PostView() {
           {post.photos && post.photos.length > 0 && (
             <div className="post-view-gallery">
               {post.photos.map((photo, index) => (
-                <div key={index} className="post-view-image-container">
+                <div key={photo.id} className="post-view-image-container">
                   <img
-                    src={`http://localhost:1291/api/photos/${photo.id}/content`}
+                    src={`http://localhost:8081/api/photos/${photo.id}/file`}
                     alt={`${post.title} - фото ${index + 1}`}
                     className="post-view-image"
                   />

@@ -1,15 +1,20 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import './CreatePostPage.css';
 
 function CreatePostPage() {
   const navigate = useNavigate();
   const { isAuthenticated, apiService } = useAuth();
+  const fileInputRef = useRef(null);
   const [categories, setCategories] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState(null);
   const [success, setSuccess] = React.useState(false);
+  const [uploadingFile, setUploadingFile] = useState(null);
+  const [photos, setPhotos] = useState([]);
+  const [createdPostId, setCreatedPostId] = useState(null);
 
   const [formData, setFormData] = React.useState({
     title: '',
@@ -24,6 +29,12 @@ function CreatePostPage() {
       fetchCategories();
     }
   }, [isAuthenticated]);
+
+  React.useEffect(() => {
+    if (createdPostId) {
+      fetchPhotos();
+    }
+  }, [createdPostId]);
 
   const fetchCategories = async () => {
     try {
@@ -42,6 +53,42 @@ function CreatePostPage() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    if (error) setError(null);
+  };
+
+  const handleFileSelect = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      setUploadingFile(file.name);
+      // Если пост уже создан, загружаем фото для него
+      if (createdPostId) {
+        await apiService.uploadPhoto(createdPostId, file);
+        setUploadingFile(null);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+        await fetchPhotos();
+        alert('Файл успешно загружен');
+      } else {
+        setError('Сначала создайте объявление, затем загружайте фото');
+        setUploadingFile(null);
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || 'Ошибка загрузки файла');
+      setUploadingFile(null);
+    }
+  };
+
+  const fetchPhotos = async () => {
+    try {
+      const response = await apiService.getPhotosByPost(createdPostId);
+      setPhotos(response.data);
+    } catch (err) {
+      console.error('Error fetching photos:', err);
+      setPhotos([]);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -49,19 +96,19 @@ function CreatePostPage() {
     setError(null);
 
     if (!formData.title.trim()) {
-      setError('Please enter a title');
+      setError('Введите название');
       return;
     }
     if (!formData.price || parseFloat(formData.price) < 0) {
-      setError('Please enter a valid price');
+      setError('Введите корректную цену');
       return;
     }
     if (!formData.categoryId) {
-      setError('Please select a category');
+      setError('Выберите категорию');
       return;
     }
     if (!formData.subcategoryId) {
-      setError('Please select a subcategory');
+      setError('Выберите подкатегорию');
       return;
     }
 
@@ -75,8 +122,12 @@ function CreatePostPage() {
         subcategoryId: parseInt(formData.subcategoryId)
       };
 
-      await apiService.createPost(postData);
+      const response = await apiService.createPost(postData);
+      const newPostId = response.data.id;
+      setCreatedPostId(newPostId);
       setSuccess(true);
+      
+      // Не очищаем форму сразу, даем возможность загрузить фото
       setFormData({
         title: '',
         description: '',
@@ -85,11 +136,12 @@ function CreatePostPage() {
         subcategoryId: ''
       });
 
+      // Перенаправление через 3 секунды, чтобы успел загрузить фото
       setTimeout(() => {
         navigate('/');
-      }, 1500);
+      }, 3000);
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Failed to create post');
+      setError(err.response?.data?.message || err.message || 'Ошибка создания объявления');
     } finally {
       setSubmitting(false);
     }
@@ -99,177 +151,78 @@ function CreatePostPage() {
     navigate('/');
   };
 
-  const containerStyle = {
-    maxWidth: '800px',
-    margin: '0 auto',
-    padding: '24px'
-  };
-
-  const headerStyle = {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: '24px'
-  };
-
-  const titleStyle = {
-    fontSize: '24px',
-    fontWeight: 600,
-    margin: 0,
-    color: '#000000d9'
-  };
-
-  const formStyle = {
-    background: '#fff',
-    padding: '24px',
-    borderRadius: '8px',
-    boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px 0 rgba(0, 0, 0, 0.02)'
-  };
-
-  const formGroupStyle = {
-    marginBottom: '16px'
-  };
-
-  const labelStyle = {
-    display: 'block',
-    marginBottom: '8px',
-    fontWeight: 500,
-    fontSize: '14px',
-    color: '#000000d9'
-  };
-
-  const inputStyle = {
-    width: '100%',
-    padding: '8px 12px',
-    border: '1px solid #d9d9d9',
-    borderRadius: '4px',
-    fontSize: '14px',
-    boxSizing: 'border-box'
-  };
-
-  const textareaStyle = {
-    ...inputStyle,
-    minHeight: '100px',
-    resize: 'vertical'
-  };
-
-  const buttonStyle = {
-    padding: '8px 16px',
-    borderRadius: '4px',
-    border: 'none',
-    cursor: 'pointer',
-    fontSize: '14px',
-    fontWeight: 500,
-    transition: 'all 0.2s'
-  };
-
-  const primaryButtonStyle = {
-    ...buttonStyle,
-    background: '#1890ff',
-    color: 'white'
-  };
-
-  const cancelButtonStyle = {
-    ...buttonStyle,
-    background: '#fff',
-    color: '#000000d9',
-    border: '1px solid #d9d9d9',
-    marginRight: '8px'
-  };
-
-  const errorStyle = {
-    background: '#fff2f0',
-    border: '1px solid #ffccc7',
-    borderRadius: '6px',
-    padding: '12px 16px',
-    marginBottom: '16px',
-    color: '#ff4d4f'
-  };
-
-  const successStyle = {
-    background: '#f6ffed',
-    border: '1px solid #b7eb8f',
-    borderRadius: '6px',
-    padding: '12px 16px',
-    marginBottom: '16px',
-    color: '#52c41a'
-  };
-
   if (!isAuthenticated) {
     return (
-      <div style={containerStyle}>
-        <div style={errorStyle}>
+      <div className="create-post-container">
+        <div className="create-post-error">
           <strong>Доступ запрещен</strong>
-          <p style={{ margin: '8px 0 0 0' }}>Пожалуйста, авторизуйтесь для создания объявлений</p>
+          <p>Пожалуйста, авторизуйтесь для создания объявлений</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={containerStyle}>
-      <div style={headerStyle}>
-        <h1 style={titleStyle}>Создать объявление</h1>
+    <div className="create-post-container">
+      <div className="create-post-header">
+        <h1>Создать объявление</h1>
         <button
+          className="cancel-btn"
           onClick={handleCancel}
-          style={cancelButtonStyle}
         >
           Назад
         </button>
       </div>
 
       {error && (
-        <div style={errorStyle}>
+        <div className="create-post-error">
           <strong>Ошибка</strong>
-          <p style={{ margin: '8px 0 0 0' }}>{error}</p>
+          <p>{error}</p>
         </div>
       )}
 
       {success && (
-        <div style={successStyle}>
+        <div className="create-post-success">
           <strong>Успех!</strong>
-          <p style={{ margin: '8px 0 0 0' }}>Объявление создано. Перенаправление на главную страницу...</p>
+          <p>Объявление создано. Перенаправление на главную страницу...</p>
         </div>
       )}
 
-      <div style={formStyle}>
+      <div className="create-post-form">
         <form onSubmit={handleSubmit}>
-          <div style={formGroupStyle}>
-            <label style={labelStyle} htmlFor="title">Название *</label>
+          <div className="form-group">
+            <label htmlFor="title">Название *</label>
             <input
               type="text"
               id="title"
               name="title"
               value={formData.title}
               onChange={handleChange}
-              style={inputStyle}
               placeholder="Введите название объявления"
               disabled={submitting}
             />
           </div>
 
-          <div style={formGroupStyle}>
-            <label style={labelStyle} htmlFor="description">Описание</label>
+          <div className="form-group">
+            <label htmlFor="description">Описание</label>
             <textarea
               id="description"
               name="description"
               value={formData.description}
               onChange={handleChange}
-              style={textareaStyle}
               placeholder="Введите описание объявления"
               disabled={submitting}
             />
           </div>
 
-          <div style={formGroupStyle}>
-            <label style={labelStyle} htmlFor="price">Цена *</label>
+          <div className="form-group">
+            <label htmlFor="price">Цена *</label>
             <input
               type="number"
               id="price"
               name="price"
               value={formData.price}
               onChange={handleChange}
-              style={inputStyle}
               placeholder="0.00"
               min="0"
               step="0.01"
@@ -277,14 +230,13 @@ function CreatePostPage() {
             />
           </div>
 
-          <div style={formGroupStyle}>
-            <label style={labelStyle} htmlFor="categoryId">Категория *</label>
+          <div className="form-group">
+            <label htmlFor="categoryId">Категория *</label>
             <select
               id="categoryId"
               name="categoryId"
               value={formData.categoryId}
               onChange={handleChange}
-              style={inputStyle}
               disabled={submitting || loading}
             >
               <option value="">Выберите категорию</option>
@@ -296,36 +248,30 @@ function CreatePostPage() {
             </select>
           </div>
 
-          <div style={{ display: 'flex', gap: '16px' }}>
-            <div style={{ flex: 1 }}>
-              <div style={formGroupStyle}>
-                <label style={labelStyle} htmlFor="subcategoryId">Подкатегория *</label>
-                <select
-                  id="subcategoryId"
-                  name="subcategoryId"
-                  value={formData.subcategoryId}
-                  onChange={handleChange}
-                  style={inputStyle}
-                  disabled={submitting || !formData.categoryId}
-                >
-                  <option value="">Выберите подкатегорию</option>
-                  {formData.categoryId && categories
-                    .find(c => c.id === parseInt(formData.categoryId))
-                    ?.subcategories?.map(sub => (
-                      <option key={sub.id} value={sub.id}>
-                        {sub.name}
-                      </option>
-                    ))
-                  }
-                </select>
-              </div>
-            </div>
+          <div className="form-group">
+            <label htmlFor="subcategoryId">Подкатегория *</label>
+            <select
+              id="subcategoryId"
+              name="subcategoryId"
+              value={formData.subcategoryId}
+              onChange={handleChange}
+              disabled={submitting || !formData.categoryId}
+            >
+              <option value="">Выберите подкатегорию</option>
+              {formData.categoryId && categories
+                .find(c => c.id === parseInt(formData.categoryId))
+                ?.subcategories?.map(sub => (
+                  <option key={sub.id} value={sub.id}>
+                    {sub.name}
+                  </option>
+                ))}
+            </select>
           </div>
 
-          <div style={{ marginTop: '24px' }}>
+          <div className="create-post-actions">
             <button
               type="submit"
-              style={primaryButtonStyle}
+              className="submit-btn"
               disabled={submitting || loading}
             >
               {submitting ? 'Создание...' : 'Создать объявление'}
@@ -333,13 +279,57 @@ function CreatePostPage() {
             <button
               type="button"
               onClick={handleCancel}
-              style={cancelButtonStyle}
+              className="cancel-btn"
               disabled={submitting}
             >
               Отмена
             </button>
           </div>
         </form>
+      </div>
+
+      <div className="create-post-photos-section">
+        <h2>Фотографии (необязательно)</h2>
+        <p className="help-text">Вы можете загрузить фотографии после создания объявления</p>
+        
+        <div className="file-upload-section">
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileSelect}
+            accept="image/*"
+            style={{ display: 'none' }}
+          />
+          <button
+            type="button"
+            className="upload-file-btn"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={!!uploadingFile || !createdPostId}
+            title={!createdPostId ? "Сначала создайте объявление" : ""}
+          >
+            {uploadingFile ? `Загрузка ${uploadingFile}...` : 'Загрузить фото'}
+          </button>
+          {!createdPostId && (
+            <span className="upload-hint"> (сначала создайте объявление)</span>
+          )}
+        </div>
+
+        {photos.length > 0 && (
+          <div className="photos-preview">
+            <h3>Загруженные фотографии:</h3>
+            <div className="photos-grid">
+              {photos.map((photo) => (
+                <div key={photo.id} className="photo-item">
+                  <img
+                    src={`http://localhost:8081/api/photos/${photo.id}/file`}
+                    alt="Фото"
+                    className="photo-preview-img"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

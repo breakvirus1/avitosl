@@ -1,30 +1,11 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import './AuthBar.css';
 
 function AuthBar() {
+  const navigate = useNavigate();
   const { user, isAuthenticated, login, logout } = useAuth();
-
-  const containerStyle = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px'
-  };
-
-  const textStyle = {
-    color: 'rgba(255, 255, 255, 0.85)',
-    fontSize: '14px'
-  };
-
-  const buttonStyle = {
-    background: isAuthenticated ? '#ff4d4f' : '#1890ff',
-    color: 'white',
-    border: 'none',
-    padding: '8px 16px',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '14px',
-    fontWeight: '500'
-  };
 
   const handleClick = () => {
     if (isAuthenticated) {
@@ -34,14 +15,40 @@ function AuthBar() {
     }
   };
 
+  const handleUserNameClick = () => {
+    if (isAuthenticated) {
+      navigate('/profile');
+    }
+  };
+
+  const getUserName = () => {
+    if (!user) return '';
+    const profile = user.profile || {};
+    return profile.given_name || profile.name || profile.email?.split('@')[0] || '';
+  };
+
   return (
-    <div style={containerStyle}>
+    <div className="auth-bar">
       {isAuthenticated && user?.profile && (
-        <span style={textStyle}>
-          {user.profile.name || user.profile.preferred_username || user.profile.email}
-        </span>
+        <button
+          className="auth-bar-username-btn"
+          onClick={handleUserNameClick}
+        >
+          {getUserName()}
+        </button>
       )}
-      <button style={buttonStyle} onClick={handleClick}>
+      {isAuthenticated && (
+        <button
+          className="auth-bar-create-btn"
+          onClick={() => navigate('/create-post')}
+        >
+          Создать объявление
+        </button>
+      )}
+      <button
+        className={`auth-bar-btn ${isAuthenticated ? 'auth-bar-btn-logout' : 'auth-bar-btn-login'}`}
+        onClick={handleClick}
+      >
         {isAuthenticated ? 'Выйти' : 'Войти'}
       </button>
     </div>

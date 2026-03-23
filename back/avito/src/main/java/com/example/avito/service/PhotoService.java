@@ -11,10 +11,21 @@ import com.example.avito.repository.PostRepository;
 import com.example.avito.request.PhotoRequest;
 import com.example.avito.response.PhotoResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -99,5 +110,53 @@ public class PhotoService {
         photo.setPrimary(true);
         photo = photoRepository.save(photo);
         return photoMapper.toResponse(photo);
+    }
+
+    @Value("${file.upload-dir:uploadedimages}")
+    private String uploadDir;
+
+    public PhotoResponse uploadFile(MultipartFile file, Long postId, User currentUser) {
+        try {
+            // Проверяем, что пользователь является автором поста
+            Post post = postRepository.findById(postId)
+                    .orElseThrow(() -> new NotFoundException("Объявление не найдено"));
+            if (!post.getAuthor().getId().equals(currentUser.getId())) {
+                throw new AccessDeniedException("Вы не можете загружать фото для этого объявления");
+            }
+
+            // Создаем директорию для загрузки, если она не существует
+            String uploadPath = System.getProperty("user.dir") + File.separator + uploadDir;
+            File uploadDirFile = new File(uploadPath);
+            if (!uploadDirFile.exists()) {
+                uploadDirFile.mkdirs();
+            }
+
+            // Генерируем уникальное имя файла
+            String originalFilename = file.getOriginalFilename();
+            String fileExtension = originalFilename != null && originalFilename.contains(".")
+                    ? originalFilename.substring(originalFilename.lastIndexOf("."))
+                    : "";
+            String uniqueFilename = UUID.randomUUID().toString() + fileExtension;
+
+            // Сохраняем файл
+            Path filePath = Paths.get(uploadPath, uniqueFilename);
+            Files.copy(file.getInputStream(), filePath);
+
+            // Создаем запись о фото в базе данных
+            String fileUrl = "/uploadedimages/" + uniqueFilename;
+            
+            Photo photo = Photo.builder()
+                    .url(fileUrl)
+                    .primary(false)
+                    .post(post)
+                    .createdAt(LocalDateTime.now())
+                    .build();
+
+            photo = photoRepository.save(photo);
+
+            return photoMapper.toResponse(photo);
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Не удалось загрузить файл: " + e.getMessage());
+        }
     }
 }

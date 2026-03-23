@@ -1,24 +1,9 @@
-/* App-level styles - minimal reset */
 #root {
   min-height: 100vh;
-  width: 100%;
 }
 
-/* Utility classes */
-.avito-container {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 0 24px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-/* Animation for loading spinner */
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }

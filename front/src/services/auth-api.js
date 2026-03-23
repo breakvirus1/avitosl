@@ -5,11 +5,6 @@ const API_BASE_URL = 'http://localhost:8081/api';
 class AuthApiService {
   constructor(getAccessToken) {
     this.getAccessToken = getAccessToken;
-    this.setupInterceptors();
-  }
-
-  setupInterceptors() {
-    // Request interceptor
     this.client = axios.create({
       baseURL: API_BASE_URL,
       headers: {
@@ -17,6 +12,11 @@ class AuthApiService {
       },
     });
 
+    this.setupInterceptors();
+  }
+
+  setupInterceptors() {
+    // Request interceptor
     this.client.interceptors.request.use(
       async (config) => {
         // Skip for auth endpoints
@@ -152,6 +152,28 @@ class AuthApiService {
 
   getRoles() {
     return this.client.get('/auth/roles');
+  }
+
+  uploadPhoto(postId, file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.client.post(`/photos/upload?postId=${postId}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  }
+
+  getPhotosByPost(postId) {
+    return this.client.get(`/photos/post/${postId}`);
+  }
+
+  getPhotoUrl(photoId) {
+    return `/api/photos/${photoId}/file`;
+  }
+
+  deletePhoto(photoId) {
+    return this.client.delete(`/photos/${photoId}`);
   }
 }
 

@@ -1,95 +1,95 @@
-import React from 'react';
-import { useAuth } from '../hooks/useAuth';
+import React, { useEffect, useState, useContext } from 'react';
+import { AuthContext } from '../contexts/AuthContext';
+import AuthApiService from '../services/auth-api';
+import AuthBar from './AuthBar.jsx';
 import PostList from './PostList.jsx';
-import './Home.css';
-import './PostList.css';
+import './HomePublic.css';
 
 function HomePublic() {
-  const { login } = useAuth();
-  const [posts, setPosts] = React.useState([]);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState(null);
-  const [pagination, setPagination] = React.useState({
-    currentPage: 0,
-    pageSize: 20,
+  const { apiService: contextApiService } = useContext(AuthContext);
+  // Используем apiService из контекста, если доступен, иначе создаем новый экземпляр
+  const apiService = contextApiService || new AuthApiService(() => Promise.resolve(null));
+  
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [pagination, setPagination] = useState({
     totalElements: 0,
-    totalPages: 0
+    totalPages: 0,
+    currentPage: 0
   });
 
-  const fetchPosts = async (page = 0, size = 20) => {
+  useEffect(() => {
+    fetchPosts(0);
+  }, []);
+
+  const fetchPosts = async (page = 0) => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:1291/api/posts?page=${page}&size=${size}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch posts');
-      }
-      const data = await response.json();
-      setPosts(data.content);
+      const response = await apiService.getPosts(page, 20);
+      setPosts(response.data.content);
       setPagination({
-        currentPage: page,
-        pageSize: size,
-        totalElements: data.totalElements,
-        totalPages: data.totalPages
+        totalElements: response.data.totalElements,
+        totalPages: response.data.totalPages,
+        currentPage: response.data.number
       });
       setError(null);
     } catch (err) {
-      console.error('Error fetching posts:', err);
-      setError(err.message || 'Failed to load posts');
+      setError('Ошибка загрузки объявлений');
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
-  React.useEffect(() => {
-    fetchPosts(pagination.currentPage, pagination.pageSize);
-  }, [pagination.currentPage, pagination.pageSize]);
-
-  const handlePageChange = (newPage) => {
-    fetchPosts(newPage, pagination.pageSize);
+  const handlePageChange = (page) => {
+    fetchPosts(page);
   };
 
-  const handleLogin = () => {
-    login();
-  };
+  if (loading) {
+    return (
+      <div className="home-container">
+        <div className="home-loading">
+          <div className="spinner"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="home-container">
+        <div className="home-error">
+          <strong>Ошибка</strong>
+          {error}
+        </div>
+        <button className="retry-btn" onClick={fetchPosts}>Попробовать снова</button>
+      </div>
+    );
+  }
 
   return (
     <div className="home-container">
-      <header className="home-header">
-        <div className="home-header-inner">
-          <h1 className="home-header-logo">Avito</h1>
-          <button
-            onClick={handleLogin}
-            className="home-header-login-btn"
-          >
-            Войти
-          </button>
-        </div>
-      </header>
+      <AuthBar />
+
       <main className="home-main">
         <div className="home-content-wrapper">
-          {error && (
-            <div className="home-error">
-              <strong>Ошибка</strong>
-              <p>{error}</p>
-              <button
-                onClick={() => setError(null)}
-                className="home-error-close"
-              >
-                ×
-              </button>
-            </div>
-          )}
-
-          <div className="home-main-content" style={{ width: '100%' }}>
+          <section className="posts-section">
+            {error && (
+              <div className="home-error">
+                <strong>Ошибка</strong>
+                {error}
+              </div>
+            )}
             <PostList
               posts={posts}
-              onDelete={() => {}}
               loading={loading}
               isAdmin={false}
               pagination={pagination}
               onPageChange={handlePageChange}
+              variant="grid"
             />
-          </div>
+          </section>
         </div>
       </main>
     </div>

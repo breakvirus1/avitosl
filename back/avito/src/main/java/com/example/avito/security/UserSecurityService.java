@@ -52,10 +52,23 @@ public class UserSecurityService {
         
         Jwt jwt = (Jwt) authentication.getPrincipal();
         String email = jwt.getClaimAsString("email");
+        String keycloakId = jwt.getClaimAsString("sub");
+        String firstName = jwt.getClaimAsString("given_name");
+        if (firstName == null || firstName.isEmpty()) {
+            firstName = email.split("@")[0];
+        }
         
         Optional<User> user = userRepository.findByEmail(email);
         if (user.isEmpty()) {
-            throw new UsernameNotFoundException("Пользователь не найден в базе данных");
+            // Auto-provisioning: создаем пользователя в локальной базе
+            User newUser = new User();
+            newUser.setEmail(email);
+            newUser.setFirstName(firstName);
+            newUser.setKeycloakId(keycloakId);
+            newUser.setEnabled(true);
+            // Пароль не нужен, так как аутентификация через Keycloak
+            newUser.setPassword("");
+            user = Optional.of(userRepository.save(newUser));
         }
         
         return user.get();
