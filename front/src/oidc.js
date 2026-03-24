@@ -1,4 +1,4 @@
-import { UserManager, WebStorageStateStore } from 'oidc-client-ts';
+import { UserManager } from 'oidc-client-ts';
 
 const settings = {
   authority: 'http://localhost:14082/realms/avitorealm',
@@ -7,12 +7,8 @@ const settings = {
   post_logout_redirect_uri: 'http://localhost:5173/',
   response_type: 'code',
   scope: 'openid profile email',
-  // PKCE автоматически включен для response_type=code
-  userStore: new WebStorageStateStore({ store: window.localStorage }),
   automaticSilentRenew: true,
   silent_redirect_uri: 'http://localhost:5173/silent-renew.html',
-  filterProtocolClaims: true,
-  loadUserInfo: true,
 };
 
 export const userManager = new UserManager(settings);
