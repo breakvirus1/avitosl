@@ -1,6 +1,9 @@
 package com.example.avito.controller;
 
-import com.example.avito.exception.*;
+import com.example.avito.exception.AccessDeniedException;
+import com.example.avito.exception.ConflictException;
+import com.example.avito.exception.NotFoundException;
+import com.example.avito.exception.ValidationException;
 import com.example.avito.response.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
@@ -58,16 +61,6 @@ public class GlobalExceptionHandler {
                 request.getRequestURI()
         );
         return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
-    }
-
-    @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException ex, HttpServletRequest request) {
-        ErrorResponse error = new ErrorResponse(
-                HttpStatus.BAD_REQUEST.value(),
-                ex.getMessage(),
-                request.getRequestURI()
-        );
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

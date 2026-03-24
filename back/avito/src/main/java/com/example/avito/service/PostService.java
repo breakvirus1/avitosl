@@ -1,10 +1,20 @@
 package com.example.avito.service;
 
-import com.example.avito.entity.*;
+import com.example.avito.entity.Category;
+import com.example.avito.entity.Comment;
+import com.example.avito.entity.Photo;
+import com.example.avito.entity.Post;
+import com.example.avito.entity.Subcategory;
+import com.example.avito.entity.User;
 import com.example.avito.exception.AccessDeniedException;
 import com.example.avito.exception.NotFoundException;
 import com.example.avito.mapper.PostMapper;
-import com.example.avito.repository.*;
+import com.example.avito.repository.CategoryRepository;
+import com.example.avito.repository.CommentRepository;
+import com.example.avito.repository.PhotoRepository;
+import com.example.avito.repository.PostRepository;
+import com.example.avito.repository.SubcategoryRepository;
+import com.example.avito.repository.UserRepository;
 import com.example.avito.request.PostRequest;
 import com.example.avito.response.PostResponse;
 import jakarta.persistence.criteria.CriteriaBuilder;
