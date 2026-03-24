@@ -21,6 +21,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -145,4 +146,37 @@ public class AuthController {
         
         return ResponseEntity.ok(roles);
     }
+
+    @Operation(
+        summary = "Включение offline access для клиента",
+        description = "Включает возможность получения offline refresh tokens для указанного клиента",
+        responses = {
+            @ApiResponse(
+                responseCode = "200",
+                description = "Offline access успешно включен"
+            ),
+            @ApiResponse(
+                responseCode = "400",
+                description = "Клиент не найден"
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "Внутренняя ошибка сервера"
+            )
+        }
+    )
+    @PostMapping("/user/{userId}/assign-role")
+    public ResponseEntity<String> assignRoleToUser(
+            @PathVariable String userId,
+            @RequestParam String roleName) {
+        try {
+            keycloakService.assignRoleToUser(userId, roleName);
+            return ResponseEntity.ok("Роль " + roleName + " назначена пользователю " + userId);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ошибка при назначении роли: " + e.getMessage());
+        }
+    }
+
 }

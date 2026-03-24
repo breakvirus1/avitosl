@@ -895,7 +895,6 @@
         "address",
         "phone",
         "organization",
-        "offline_access",
         "microprofile-jwt"
       ]
     }
