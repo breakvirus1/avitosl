@@ -1,0 +1,248 @@
+package com.example.avito.controller;
+
+import com.example.avito.entity.User;
+import com.example.avito.request.PostRequest;
+import com.example.avito.response.PostResponse;
+import com.example.avito.security.UserSecurityService;
+import com.example.avito.service.PostService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.math.BigDecimal;
+
+@RestController
+@RequestMapping("/api/posts")
+@RequiredArgsConstructor
+@Validated
+@Tag(name = "Объявления", description = "API для управления объявлениями (постами)")
+public class PostController {
+
+    private final PostService postService;
+    private final UserSecurityService userSecurityService;
+
+    private User getCurrentUser() {
+        return userSecurityService.getCurrentUser();
+    }
+
+    @Operation(
+        summary = "Получение списка всех объявлений",
+        description = "Возвращает постраничный список всех объявлений с возможностью сортировки",
+        responses = {
+            @ApiResponse(
+                responseCode = "200",
+                description = "Список объявлений успешно получен",
+                content = @Content(schema = @Schema(implementation = Page.class))
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "Внутренняя ошибка сервера"
+            )
+        }
+    )
+    @GetMapping
+    public ResponseEntity<Page<PostResponse>> getAllPosts(
+            @Parameter(description = "Номер страницы (начиная с 0)", in = ParameterIn.QUERY, schema = @Schema(type = "integer", defaultValue = "0"))
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Количество элементов на странице", in = ParameterIn.QUERY, schema = @Schema(type = "integer", defaultValue = "20"))
+            @RequestParam(defaultValue = "20") int size,
+            @Parameter(description = "Поля сортировки в формате 'field,direction' (например: 'createdAt,desc')", in = ParameterIn.QUERY, schema = @Schema(type = "array", defaultValue = "createdAt,desc"))
+            @RequestParam(defaultValue = "createdAt,desc") String[] sort
+    ) {
+        Sort.Order order = new Sort.Order(Sort.Direction.fromString(sort[1]), sort[0]);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(order));
+        return ResponseEntity.ok(postService.getAllPosts(pageable));
+    }
+
+    @Operation(
+        summary = "Поиск объявлений по параметрам",
+        description = "Возвращает постраничный список объявлений, отфильтрованных по заданным критериям",
+        responses = {
+            @ApiResponse(
+                responseCode = "200",
+                description = "Результаты поиска успешно получены",
+                content = @Content(schema = @Schema(implementation = Page.class))
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "Внутренняя ошибка сервера"
+            )
+        }
+    )
+    @GetMapping("/search")
+    public ResponseEntity<Page<PostResponse>> searchPosts(
+            @Parameter(description = "Заголовок объявления (частичное совпадение)", in = ParameterIn.QUERY)
+            @RequestParam(required = false) String title,
+            @Parameter(description = "Минимальная цена", in = ParameterIn.QUERY, schema = @Schema(type = "number"))
+            @RequestParam(required = false) BigDecimal minPrice,
+            @Parameter(description = "Максимальная цена", in = ParameterIn.QUERY, schema = @Schema(type = "number"))
+            @RequestParam(required = false) BigDecimal maxPrice,
+            @Parameter(description = "ID подкатегории", in = ParameterIn.QUERY, schema = @Schema(type = "integer"))
+            @RequestParam(required = false) Long subcategoryId,
+            @Parameter(description = "Номер страницы (начиная с 0)", in = ParameterIn.QUERY, schema = @Schema(type = "integer", defaultValue = "0"))
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Количество элементов на странице", in = ParameterIn.QUERY, schema = @Schema(type = "integer", defaultValue = "20"))
+            @RequestParam(defaultValue = "20") int size,
+            @Parameter(description = "Поля сортировки в формате 'field,direction'", in = ParameterIn.QUERY, schema = @Schema(type = "array", defaultValue = "createdAt,desc"))
+            @RequestParam(defaultValue = "createdAt,desc") String[] sort
+    ) {
+        Sort.Order order = new Sort.Order(Sort.Direction.fromString(sort[1]), sort[0]);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(order));
+        return ResponseEntity.ok(postService.searchPosts(title, minPrice, maxPrice, subcategoryId, pageable));
+    }
+
+    @Operation(
+        summary = "Получение объявления по ID",
+        description = "Возвращает детальную информацию об объявлении по его идентификатору",
+        responses = {
+            @ApiResponse(
+                responseCode = "200",
+                description = "Объявление успешно найдено",
+                content = @Content(schema = @Schema(implementation = PostResponse.class))
+            ),
+            @ApiResponse(
+                responseCode = "404",
+                description = "Объявление не найдено"
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "Внутренняя ошибка сервера"
+            )
+        }
+    )
+    @GetMapping("/{id}")
+    public ResponseEntity<PostResponse> getPostById(
+            @Parameter(description = "ID объявления", in = ParameterIn.PATH, required = true, schema = @Schema(type = "integer"))
+            @PathVariable Long id) {
+        return ResponseEntity.ok(postService.getPostById(id));
+    }
+
+    @Operation(
+        summary = "Создание нового объявления",
+        description = "Создает новое объявление. Требует аутентификации. Автором объявления является текущий пользователь",
+        responses = {
+            @ApiResponse(
+                responseCode = "200",
+                description = "Объявление успешно создано",
+                content = @Content(schema = @Schema(implementation = PostResponse.class))
+            ),
+            @ApiResponse(
+                responseCode = "401",
+                description = "Пользователь не авторизован"
+            ),
+            @ApiResponse(
+                responseCode = "400",
+                description = "Ошибка валидации данных"
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "Внутренняя ошибка сервера"
+            )
+        }
+    )
+    @PostMapping
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<PostResponse> createPost(@RequestBody
+        @Parameter(description = "Данные объявления", required = true)
+        @Valid PostRequest request) {
+        User currentUser = getCurrentUser();
+        return ResponseEntity.ok(postService.createPost(request, currentUser));
+    }
+
+    @Operation(
+        summary = "Обновление объявления",
+        description = "Обновляет существующее объявление. Требует аутентификации. Пользователь может редактировать только свои объявления",
+        responses = {
+            @ApiResponse(
+                responseCode = "200",
+                description = "Объявление успешно обновлено",
+                content = @Content(schema = @Schema(implementation = PostResponse.class))
+            ),
+            @ApiResponse(
+                responseCode = "401",
+                description = "Пользователь не авторизован"
+            ),
+            @ApiResponse(
+                responseCode = "403",
+                description = "Нет прав на редактирование этого объявления"
+            ),
+            @ApiResponse(
+                responseCode = "404",
+                description = "Объявление не найдено"
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "Внутренняя ошибка сервера"
+            )
+        }
+    )
+    @PutMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<PostResponse> updatePost(
+            @Parameter(description = "ID объявления", in = ParameterIn.PATH, required = true, schema = @Schema(type = "integer"))
+            @PathVariable Long id,
+            @RequestBody
+            @Parameter(description = "Обновленные данные объявления", required = true)
+            @Valid PostRequest request) {
+        User currentUser = getCurrentUser();
+        return ResponseEntity.ok(postService.updatePost(id, request, currentUser));
+    }
+
+    @Operation(
+        summary = "Удаление объявления",
+        description = "Удаляет объявление. Требует аутентификации. Пользователь может удалять только свои объявления",
+        responses = {
+            @ApiResponse(
+                responseCode = "204",
+                description = "Объявление успешно удалено"
+            ),
+            @ApiResponse(
+                responseCode = "401",
+                description = "Пользователь не авторизован"
+            ),
+            @ApiResponse(
+                responseCode = "403",
+                description = "Нет прав на удаление этого объявления"
+            ),
+            @ApiResponse(
+                responseCode = "404",
+                description = "Объявление не найдено"
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "Внутренняя ошибка сервера"
+            )
+        }
+    )
+    @DeleteMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> deletePost(
+            @Parameter(description = "ID объявления", in = ParameterIn.PATH, required = true, schema = @Schema(type = "integer"))
+            @PathVariable Long id) {
+        User currentUser = getCurrentUser();
+        postService.deletePost(id, currentUser);
+        return ResponseEntity.noContent().build();
+    }
+}

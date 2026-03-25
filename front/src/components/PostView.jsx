@@ -1,0 +1,202 @@
+import React from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
+import './PostView.css';
+
+function PostView() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { isAuthenticated, apiService, user } = useAuth();
+  const [post, setPost] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState(null);
+
+  React.useEffect(() => {
+    if (isAuthenticated && id) {
+      fetchPost();
+    }
+  }, [isAuthenticated, id]);
+
+  const fetchPost = async () => {
+    try {
+      setLoading(true);
+      const response = await apiService.getPost(id);
+      setPost(response.data);
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching post:', err);
+      setError(err.response?.data?.message || err.message || 'Failed to load post');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeletePost = async () => {
+    try {
+      await apiService.deletePost(id);
+      navigate('/');
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || 'Failed to delete post');
+    }
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    return new Date(dateString).toLocaleDateString('ru-RU', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const formatPrice = (price) => {
+    if (!price) return 'Цена не указана';
+    return `${price.toLocaleString()} ₽`;
+  };
+
+  if (loading) {
+    return (
+      <div className="post-view-loading">
+        <div className="post-view-spinner"></div>
+        <p>Загрузка объявления...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="post-view-error">
+        <strong>Ошибка</strong>
+        <p>{error}</p>
+        <button onClick={() => navigate('/')} className="post-view-back-btn">
+          Назад к объявлениям
+        </button>
+      </div>
+    );
+  }
+
+  if (!post) {
+    return (
+      <div className="post-view-not-found">
+        <p>Объявление не найдено</p>
+        <button onClick={() => navigate('/')} className="post-view-back-btn">
+          Назад к объявлениям
+        </button>
+      </div>
+    );
+  }
+
+  const isOwner = post.author?.keycloakId === user?.sub;
+
+  return (
+    <div className="post-view-container">
+      <button onClick={() => navigate(-1)} className="post-view-back">
+        ← Назад
+      </button>
+
+      <div className="post-view-content">
+        <div className="post-view-main">
+          <div className="post-view-header">
+            <h1 className="post-view-title">{post.title}</h1>
+            <div className="post-view-meta">
+              <span className="post-view-date">
+                {formatDate(post.createdAt)}
+              </span>
+              {post.category && (
+                <span className="post-view-category">
+                  {post.category.name}
+                </span>
+              )}
+              {post.subcategory && (
+                <span className="post-view-subcategory">
+                  {post.subcategory.name}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {post.photos && post.photos.length > 0 && (
+            <div className="post-view-gallery">
+              {post.photos.map((photo, index) => (
+                <div key={photo.id} className="post-view-image-container">
+                  <img
+                    src={`http://localhost:8081/api/photos/${photo.id}/file`}
+                    alt={`${post.title} - фото ${index + 1}`}
+                    className="post-view-image"
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="post-view-description">
+            <h3>Описание</h3>
+            <p>{post.description || 'Без описания'}</p>
+          </div>
+        </div>
+
+        <div className="post-view-sidebar">
+          <div className="post-view-price-card">
+            <div className="post-view-price">
+              {formatPrice(post.price)}
+            </div>
+            <div className="post-view-status">
+              {post.active ? (
+                <span className="post-view-status-active">Активно</span>
+              ) : (
+                <span className="post-view-status-inactive">Неактивно</span>
+              )}
+            </div>
+          </div>
+
+          <div className="post-view-author-card">
+            <h4>Продавец</h4>
+            {post.author && (
+              <>
+                <p className="post-view-author-name">
+                  {post.author.firstName} {post.author.lastName || ''}
+                </p>
+                <p className="post-view-author-email">
+                  {post.author.email}
+                </p>
+              </>
+            )}
+          </div>
+
+          <div className="post-view-actions">
+            <button className="post-view-contact-btn">
+              Написать продавцу
+            </button>
+            {isOwner && (
+              <>
+                <button 
+                  className="post-view-edit-btn"
+                  onClick={() => navigate(`/edit-post/${post.id}`)}
+                >
+                  Редактировать
+                </button>
+                <button 
+                  className="post-view-delete-btn"
+                  onClick={handleDeletePost}
+                >
+                  Удалить
+                </button>
+              </>
+            )}
+          </div>
+
+          <div className="post-view-dates">
+            <p>Создано: {formatDate(post.createdAt)}</p>
+            {post.updatedAt && (
+              <p>Обновлено: {formatDate(post.updatedAt)}</p>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default PostView;
