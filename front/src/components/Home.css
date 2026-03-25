@@ -1,0 +1,36 @@
+/* Windows XP Style Home */
+.home-container {
+  min-height: 100vh;
+  background: #ece9d8;
+}
+
+.home-main {
+  padding: 20px;
+  min-height: calc(100vh - 60px);
+}
+
+.home-content-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.home-error {
+  background: #ffe5e5;
+  border: 1px solid #e60012;
+  color: #e60012;
+  padding: 10px;
+  border-radius: 3px;
+  margin-bottom: 16px;
+  font-size: 12px;
+  font-family: 'Tahoma', sans-serif;
+}
+
+.home-loading {
+  text-align: center;
+  padding: 60px 24px;
+  background: #ffffff;
+  border: 1px solid #7f9db9;
+  border-radius: 3px;
+  max-width: 1200px;
+  margin: 20px auto;
+}

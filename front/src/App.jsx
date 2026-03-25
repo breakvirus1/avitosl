@@ -1,33 +1,30 @@
-import "./App.css";
-import Post from "./components/Post";
-import keycloak from "./keycloak";
-import { ReactKeycloakProvider, useKeycloak } from "@react-keycloak/web";
+import React from 'react'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { AuthProvider } from './contexts/AuthProvider'
+import PrivateRoute from './components/PrivateRoute.jsx'
+import HomeWrapper from './components/HomeWrapper.jsx'
+import CreatePostPage from './components/CreatePostPage.jsx'
+import EditPostPage from './components/EditPostPage.jsx'
+import UserProfile from './components/UserProfile.jsx'
+import Callback from './components/Callback.jsx'
+import PostView from './components/PostView.jsx'
 
 function App() {
   return (
-    <ReactKeycloakProvider authClient={keycloak}>
-      <SecuredContent />
-    </ReactKeycloakProvider>
-  );
+    <Router>
+      <AuthProvider>
+        <Routes>
+          <Route path="/" element={<HomeWrapper />} />
+          <Route path="/create-post" element={<PrivateRoute><CreatePostPage /></PrivateRoute>} />
+          <Route path="/edit-post/:id" element={<PrivateRoute><EditPostPage /></PrivateRoute>} />
+          <Route path="/profile" element={<PrivateRoute><UserProfile /></PrivateRoute>} />
+          <Route path="/post/:id" element={<PostView />} />
+          <Route path="/callback" element={<Callback />} />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </AuthProvider>
+    </Router>
+  )
 }
-const SecuredContent = () => {
-  const { keycloak } = useKeycloak();
-  const isLoggedIn = keycloak.authenticated;
 
-
-  if (!isLoggedIn) return (
-    <div>
-      <div>привет. это страница для авторизации</div>
-      <button onClick={() => keycloak.login()}>Войти</button>
-    </div>
-  );
-  return (
-    <div>
-      <h2>Spring Boot приложение с Keycloak</h2>
-      <div>Пользователь: {keycloak.tokenParsed?.preferred_username}</div>
-      <button onClick={() => keycloak.logout()}>Выйти</button>
-      <Post />
-    </div>
-  );
-};
-export default App;
+export default App
