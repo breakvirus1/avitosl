@@ -27,6 +27,8 @@ function PostForm({ onFinish, categories }) {
       newErrors.price = 'Пожалуйста, укажите цену!'
     } else if (formData.price && parseFloat(formData.price) < 0) {
       newErrors.price = 'Цена не может быть отрицательной'
+    } else if (formData.price && parseFloat(formData.price) > 99999999.99) {
+      newErrors.price = 'Цена не может превышать 99,999,999.99'
     }
 
     if (!formData.categoryId) {
@@ -167,6 +169,7 @@ function PostForm({ onFinish, categories }) {
           onChange={handleChange}
           placeholder="0.00"
           min="0"
+          max="99999999.99"
           step="0.01"
           style={inputStyle}
         />
