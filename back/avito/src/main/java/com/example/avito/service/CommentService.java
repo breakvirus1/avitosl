@@ -11,6 +11,8 @@ import com.example.avito.repository.PostRepository;
 import com.example.avito.request.CommentRequest;
 import com.example.avito.response.CommentResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -38,14 +40,17 @@ public class CommentService {
         return commentMapper.toResponse(comment);
     }
 
+    @Cacheable(value = "commentsByPost", key = "#postId")
     public List<CommentResponse> getCommentsByPost(Long postId) {
         return commentMapper.toResponseList(commentRepository.findByPostId(postId));
     }
 
+    @Cacheable(value = "commentsByUser", key = "#userId")
     public List<CommentResponse> getCommentsByUser(Long userId) {
         return commentMapper.toResponseList(commentRepository.findByAuthorId(userId));
     }
 
+    @CacheEvict(value = {"comment", "commentsByPost", "commentsByUser"}, allEntries = true)
     public CommentResponse updateComment(Long id, CommentRequest request, User author) {
         Comment comment = commentRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Комментарий не найден"));
@@ -59,6 +64,7 @@ public class CommentService {
         return commentMapper.toResponse(comment);
     }
 
+    @CacheEvict(value = {"comment", "commentsByPost", "commentsByUser"}, allEntries = true)
     public void deleteComment(Long id, User author) {
         Comment comment = commentRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Комментарий не найден"));
@@ -70,6 +76,7 @@ public class CommentService {
         commentRepository.delete(comment);
     }
 
+    @Cacheable(value = "comment", key = "#id")
     public CommentResponse getCommentById(Long id) {
         Comment comment = commentRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Комментарий не найден"));

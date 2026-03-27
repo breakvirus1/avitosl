@@ -14,6 +14,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -37,6 +39,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/api/photos")
@@ -304,6 +308,7 @@ public class PhotoController {
             
             return ResponseEntity.ok()
                     .contentType(org.springframework.http.MediaType.parseMediaType(contentType))
+                    .cacheControl(CacheControl.maxAge(1, TimeUnit.DAYS).cachePublic())
                     .body(fileBytes);
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Файл не найден");

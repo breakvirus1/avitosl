@@ -23,6 +23,8 @@ import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -43,6 +45,7 @@ public class PostService {
     private final PhotoRepository photoRepository;
     private final PostMapper postMapper;
 
+    @CacheEvict(value = {"post", "posts"}, allEntries = true)
     public PostResponse createPost(PostRequest request, User author) {
         Post post = Post.builder()
                 .title(request.getTitle())
@@ -82,6 +85,7 @@ public class PostService {
         return postMapper.toResponse(savedPost);
     }
 
+    @Cacheable(value = "posts", key = "#pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<PostResponse> getAllPosts(Pageable pageable) {
         return postRepository.findByActiveTrue(pageable).map(postMapper::toResponse);
     }
@@ -90,12 +94,14 @@ public class PostService {
         return postRepository.findById(id);
     }
 
+    @Cacheable(value = "post", key = "#id")
     public PostResponse getPostById(Long id) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Объявление не найдено"));
         return postMapper.toResponse(post);
     }
 
+    @CacheEvict(value = {"post", "posts", "postsSearch"}, allEntries = true)
     public PostResponse updatePost(Long id, PostRequest request, User author) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Объявление не найдено"));
@@ -126,6 +132,7 @@ public class PostService {
         return postMapper.toResponse(post);
     }
 
+    @CacheEvict(value = {"post", "posts", "postsSearch"}, key = "#id")
     public void deletePost(Long id, User author) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Объявление не найдено"));
@@ -137,6 +144,7 @@ public class PostService {
         postRepository.delete(post);
     }
 
+    @Cacheable(value = "postsSearch", key = "#title + '-' + #minPrice + '-' + #maxPrice + '-' + #subcategoryId + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<PostResponse> searchPosts(String title, BigDecimal minPrice, BigDecimal maxPrice, Long subcategoryId, Pageable pageable) {
         return postRepository.findAll((root, query, cb) -> {
             List<Predicate> predicates = new java.util.ArrayList<>();
@@ -164,6 +172,7 @@ public class PostService {
         }, pageable).map(postMapper::toResponse);
     }
 
+    @Cacheable(value = "postsByUser", key = "#userId + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<PostResponse> getPostsByUser(Long userId, Pageable pageable) {
         return postRepository.findByAuthorId(userId, pageable).map(postMapper::toResponse);
     }
