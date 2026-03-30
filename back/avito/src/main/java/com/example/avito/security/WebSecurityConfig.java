@@ -71,6 +71,13 @@ public class WebSecurityConfig {
                 ).authenticated()
                 
                 .requestMatchers("/api/auth/**").permitAll()
+                 
+                // WebSocket endpoints
+                .requestMatchers(
+                    "/ws/**",
+                    "/ws",
+                    "/sockjs/**"
+                ).authenticated()
                 
                 .anyRequest().authenticated()
             );

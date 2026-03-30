@@ -38,12 +38,20 @@ function AuthBar() {
         </button>
       )}
       {isAuthenticated && (
-        <button
-          className="auth-bar-create-btn"
-          onClick={() => navigate('/create-post')}
-        >
-          Создать объявление
-        </button>
+        <>
+          <button
+            className="auth-bar-create-btn"
+            onClick={() => navigate('/create-post')}
+          >
+            Создать объявление
+          </button>
+          <button
+            className="auth-bar-chat-btn"
+            onClick={() => navigate('/chat')}
+          >
+            Чат
+          </button>
+        </>
       )}
       <button
         className={`auth-bar-btn ${isAuthenticated ? 'auth-bar-btn-logout' : 'auth-bar-btn-login'}`}

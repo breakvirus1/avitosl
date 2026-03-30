@@ -41,8 +41,25 @@
   color: white;
 }
 
+.auth-bar-chat-btn {
+  padding: 6px 12px;
+  border-radius: 3px;
+  border: 1px solid #28a745;
+  font-size: 12px;
+  font-weight: normal;
+  font-family: 'Tahoma', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: linear-gradient(to bottom, #28a745 0%, #1e7e34 100%);
+  color: white;
+}
+
 .auth-bar-create-btn:hover {
   background: linear-gradient(to bottom, #1e3f6f 0%, #2b579a 100%);
+}
+
+.auth-bar-chat-btn:hover {
+  background: linear-gradient(to bottom, #1e7e34 0%, #28a745 100%);
 }
 
 .auth-bar-btn {

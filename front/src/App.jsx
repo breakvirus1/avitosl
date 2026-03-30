@@ -8,6 +8,7 @@ import EditPostPage from './components/EditPostPage.jsx'
 import UserProfile from './components/UserProfile.jsx'
 import Callback from './components/Callback.jsx'
 import PostView from './components/PostView.jsx'
+import Chat from './components/Chat.jsx'
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/" element={<HomeWrapper />} />
+          <Route path="/chat" element={<PrivateRoute><Chat /></PrivateRoute>} />
           <Route path="/create-post" element={<PrivateRoute><CreatePostPage /></PrivateRoute>} />
           <Route path="/edit-post/:id" element={<PrivateRoute><EditPostPage /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><UserProfile /></PrivateRoute>} />
