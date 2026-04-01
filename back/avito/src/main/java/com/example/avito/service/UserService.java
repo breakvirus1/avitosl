@@ -98,6 +98,24 @@ public class UserService {
         userRepository.save(user);
     }
 
+    public UserResponse getCurrentUser() {
+        org.springframework.security.core.Authentication authentication =
+                org.springframework.security.core.context.SecurityContextHolder
+                        .getContext()
+                        .getAuthentication();
+        
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new NotFoundException("Пользователь не аутентифицирован");
+        }
+        
+        org.springframework.security.oauth2.jwt.Jwt jwt = (org.springframework.security.oauth2.jwt.Jwt) authentication.getPrincipal();
+        String email = jwt.getClaimAsString("email");
+        
+        User currentUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        return userMapper.toResponse(currentUser);
+    }
+
     public User saveUser(User user) {
         return userRepository.save(user);
     }

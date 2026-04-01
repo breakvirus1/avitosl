@@ -68,6 +68,26 @@ public class UserController {
     }
 
     @Operation(
+        summary = "Получение текущего пользователя",
+        description = "Возвращает информацию о текущем аутентифицированном пользователе",
+        responses = {
+            @ApiResponse(
+                responseCode = "200",
+                description = "Пользователь успешно найден",
+                content = @Content(schema = @Schema(implementation = UserResponse.class))
+            ),
+            @ApiResponse(
+                responseCode = "401",
+                description = "Пользователь не аутентифицирован"
+            )
+        }
+    )
+    @GetMapping("/me")
+    public ResponseEntity<UserResponse> getCurrentUser() {
+        return ResponseEntity.ok(userService.getCurrentUser());
+    }
+
+    @Operation(
         summary = "Получение списка всех пользователей",
         description = "Возвращает список всех пользователей системы. Доступно только администраторам",
         responses = {
