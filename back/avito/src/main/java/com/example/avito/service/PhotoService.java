@@ -12,6 +12,8 @@ import com.example.avito.request.PhotoRequest;
 import com.example.avito.response.PhotoResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,6 +37,7 @@ public class PhotoService {
     private final PostRepository postRepository;
     private final PhotoMapper photoMapper;
 
+    @CacheEvict(value = {"photo", "photosByPost"}, allEntries = true)
     public PhotoResponse addPhoto(PhotoRequest request) {
         Post post = postRepository.findById(request.getPostId())
                 .orElseThrow(() -> new NotFoundException("Объявление не найдено"));
@@ -49,16 +52,19 @@ public class PhotoService {
         return photoMapper.toResponse(photo);
     }
 
+    @Cacheable(value = "photosByPost", key = "#postId")
     public List<PhotoResponse> getPhotosByPost(Long postId) {
         return photoMapper.toResponseList(photoRepository.findByPostId(postId));
     }
 
+    @Cacheable(value = "photo", key = "#id")
     public PhotoResponse getPhotoById(Long id) {
         Photo photo = photoRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Фото не найдено"));
         return photoMapper.toResponse(photo);
     }
 
+    @CacheEvict(value = {"photo", "photosByPost"}, allEntries = true)
     public PhotoResponse updatePhoto(Long id, PhotoRequest request, User currentUser) {
         Photo photo = photoRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Фото не найдено"));
@@ -76,6 +82,7 @@ public class PhotoService {
         return photoMapper.toResponse(photo);
     }
 
+    @CacheEvict(value = {"photo", "photosByPost"}, key = "#id")
     public void deletePhoto(Long id, User currentUser) {
         Photo photo = photoRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Фото не найдено"));
@@ -89,6 +96,7 @@ public class PhotoService {
         photoRepository.delete(photo);
     }
 
+    @CacheEvict(value = {"photo", "photosByPost"}, allEntries = true)
     public PhotoResponse setPrimaryPhoto(Long photoId, User currentUser) {
         Photo photo = photoRepository.findById(photoId)
                 .orElseThrow(() -> new NotFoundException("Фото не найдено"));
@@ -115,6 +123,7 @@ public class PhotoService {
     @Value("${file.upload-dir:uploadedimages}")
     private String uploadDir;
 
+    @CacheEvict(value = "photosByPost", key = "#postId")
     public PhotoResponse uploadFile(MultipartFile file, Long postId, User currentUser) {
         try {
             // Проверяем, что пользователь является автором поста

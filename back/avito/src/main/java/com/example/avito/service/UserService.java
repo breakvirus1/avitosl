@@ -10,6 +10,8 @@ import com.example.avito.repository.UserRepository;
 import com.example.avito.request.RegisterRequest;
 import com.example.avito.response.UserResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +27,7 @@ public class UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
 
+    @CacheEvict(value = {"user", "users"}, allEntries = true)
     public UserResponse createUser(RegisterRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new ConflictException("Пользователь с таким email уже существует");
@@ -54,6 +57,7 @@ public class UserService {
         return userRepository.findById(id);
     }
 
+    @CacheEvict(value = {"user", "users"}, allEntries = true)
     public UserResponse updateUser(Long id, RegisterRequest request) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
@@ -65,14 +69,17 @@ public class UserService {
         return userMapper.toResponse(user);
     }
 
+    @CacheEvict(value = {"user", "users"}, allEntries = true)
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
     }
 
+    @Cacheable(value = "users")
     public List<UserResponse> getAllUsers() {
         return userMapper.toResponseList(userRepository.findAll());
     }
 
+    @Cacheable(value = "user", key = "#id")
     public UserResponse getUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
@@ -89,6 +96,24 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
         user.setKeycloakId(keycloakId);
         userRepository.save(user);
+    }
+
+    public UserResponse getCurrentUser() {
+        org.springframework.security.core.Authentication authentication =
+                org.springframework.security.core.context.SecurityContextHolder
+                        .getContext()
+                        .getAuthentication();
+        
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new NotFoundException("Пользователь не аутентифицирован");
+        }
+        
+        org.springframework.security.oauth2.jwt.Jwt jwt = (org.springframework.security.oauth2.jwt.Jwt) authentication.getPrincipal();
+        String email = jwt.getClaimAsString("email");
+        
+        User currentUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        return userMapper.toResponse(currentUser);
     }
 
     public User saveUser(User user) {

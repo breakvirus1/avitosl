@@ -3,6 +3,7 @@ package com.example.avito.service;
 import com.example.avito.entity.Category;
 import com.example.avito.entity.Comment;
 import com.example.avito.entity.Post;
+import com.example.avito.entity.Role;
 import com.example.avito.entity.Subcategory;
 import com.example.avito.entity.User;
 import com.example.avito.repository.CategoryRepository;

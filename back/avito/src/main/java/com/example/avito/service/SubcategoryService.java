@@ -10,6 +10,8 @@ import com.example.avito.repository.SubcategoryRepository;
 import com.example.avito.request.SubcategoryRequest;
 import com.example.avito.response.SubcategoryResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +30,7 @@ public class SubcategoryService {
         return subcategoryRepository;
     }
 
+    @CacheEvict(value = {"subcategory", "subcategories", "subcategoriesByCategory"}, allEntries = true)
     @Transactional
     public SubcategoryResponse createSubcategory(SubcategoryRequest request) {
         Category category = categoryRepository.findById(request.getCategoryId())
@@ -44,24 +47,28 @@ public class SubcategoryService {
         return subcategoryMapper.toResponse(savedSubcategory);
     }
 
+    @Cacheable(value = "subcategory", key = "#id")
     public SubcategoryResponse getSubcategoryById(Long id) {
         Subcategory subcategory = subcategoryRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Подкатегория не найдена"));
         return subcategoryMapper.toResponse(subcategory);
     }
 
+    @Cacheable(value = "subcategories")
     public List<SubcategoryResponse> getAllSubcategories() {
         return subcategoryRepository.findAll().stream()
                 .map(subcategoryMapper::toResponse)
                 .collect(Collectors.toList());
     }
 
+    @Cacheable(value = "subcategoriesByCategory", key = "#categoryId")
     public List<SubcategoryResponse> getSubcategoriesByCategoryId(Long categoryId) {
         return subcategoryRepository.findByCategoryId(categoryId).stream()
                 .map(subcategoryMapper::toResponse)
                 .collect(Collectors.toList());
     }
 
+    @CacheEvict(value = {"subcategory", "subcategories", "subcategoriesByCategory"}, allEntries = true)
     @Transactional
     public SubcategoryResponse updateSubcategory(Long id, SubcategoryRequest request) {
         Subcategory subcategory = subcategoryRepository.findById(id)
@@ -81,6 +88,7 @@ public class SubcategoryService {
         return subcategoryMapper.toResponse(updatedSubcategory);
     }
 
+    @CacheEvict(value = {"subcategory", "subcategories", "subcategoriesByCategory"}, allEntries = true)
     @Transactional
     public void deleteSubcategory(Long id) {
         if (!subcategoryRepository.existsById(id)) {

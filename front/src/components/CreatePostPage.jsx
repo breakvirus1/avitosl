@@ -99,8 +99,16 @@ function CreatePostPage() {
       setError('Введите название');
       return;
     }
-    if (!formData.price || parseFloat(formData.price) < 0) {
-      setError('Введите корректную цену');
+    if (formData.price && parseFloat(formData.price) < 0) {
+      setError('Цена не может быть отрицательной');
+      return;
+    }
+    if (formData.price && parseFloat(formData.price) > 99999999.99) {
+      setError('Цена не может превышать 99,999,999.99');
+      return;
+    }
+    if (formData.price && parseFloat(formData.price) > 99999999.99) {
+      setError('Цена не может превышать 99,999,999.99');
       return;
     }
     if (!formData.categoryId) {
@@ -117,7 +125,7 @@ function CreatePostPage() {
       const postData = {
         title: formData.title.trim(),
         description: formData.description || '',
-        price: parseFloat(formData.price),
+        price: formData.price ? parseFloat(formData.price) : null,
         categoryId: parseInt(formData.categoryId),
         subcategoryId: parseInt(formData.subcategoryId)
       };
@@ -225,6 +233,7 @@ function CreatePostPage() {
               onChange={handleChange}
               placeholder="0.00"
               min="0"
+              max="99999999.99"
               step="0.01"
               disabled={submitting}
             />

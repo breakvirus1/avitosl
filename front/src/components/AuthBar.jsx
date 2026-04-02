@@ -5,7 +5,7 @@ import './AuthBar.css';
 
 function AuthBar() {
   const navigate = useNavigate();
-  const { user, isAuthenticated, login, logout } = useAuth();
+  const { user, isAuthenticated, login, logout, unreadCount } = useAuth();
 
   const handleClick = () => {
     if (isAuthenticated) {
@@ -19,6 +19,10 @@ function AuthBar() {
     if (isAuthenticated) {
       navigate('/profile');
     }
+  };
+
+  const handleNotificationsClick = () => {
+    navigate('/notifications');
   };
 
   const getUserName = () => {
@@ -43,6 +47,17 @@ function AuthBar() {
           onClick={() => navigate('/create-post')}
         >
           Создать объявление
+        </button>
+      )}
+      {isAuthenticated && (
+        <button
+          className="auth-bar-notification-btn"
+          onClick={handleNotificationsClick}
+        >
+          🔔
+          {unreadCount > 0 && (
+            <span className="auth-bar-notification-count">{unreadCount}</span>
+          )}
         </button>
       )}
       <button

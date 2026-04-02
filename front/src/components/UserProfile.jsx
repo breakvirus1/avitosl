@@ -29,6 +29,13 @@ function UserProfile() {
     );
   }
 
+  // Получаем данные из JWT token (поле profile)
+  const profile = user.profile || {};
+  const firstName = profile.given_name || profile.name?.split(' ')[0] || 'Не указано';
+  const lastName = profile.family_name || profile.name?.split(' ').slice(1).join(' ') || 'Не указано';
+  const email = profile.email || 'Не указано';
+  const userId = user.id || profile.sub || 'Не указано';
+
   return (
     <div className="user-profile-container">
       <div className="user-profile-content">
@@ -38,31 +45,31 @@ function UserProfile() {
 
         <div className="user-profile-card">
           <div className="user-profile-avatar">
-            {user.firstName?.charAt(0) || user.email?.charAt(0) || 'U'}
+            {firstName?.charAt(0) || email?.charAt(0) || 'U'}
           </div>
           
           <div className="user-profile-info">
             <h1 className="user-profile-name">
-              {user.firstName} {user.lastName || ''}
+              {firstName} {lastName}
             </h1>
-            <p className="user-profile-email">{user.email}</p>
+            <p className="user-profile-email">{email}</p>
             
             <div className="user-profile-details">
               <div className="user-profile-detail-item">
                 <span className="user-profile-label">Имя:</span>
-                <span className="user-profile-value">{user.firstName || 'Не указано'}</span>
+                <span className="user-profile-value">{firstName}</span>
               </div>
               <div className="user-profile-detail-item">
                 <span className="user-profile-label">Фамилия:</span>
-                <span className="user-profile-value">{user.lastName || 'Не указано'}</span>
+                <span className="user-profile-value">{lastName}</span>
               </div>
               <div className="user-profile-detail-item">
                 <span className="user-profile-label">Email:</span>
-                <span className="user-profile-value">{user.email || 'Не указано'}</span>
+                <span className="user-profile-value">{email}</span>
               </div>
               <div className="user-profile-detail-item">
                 <span className="user-profile-label">ID:</span>
-                <span className="user-profile-value">{user.id || 'Не указано'}</span>
+                <span className="user-profile-value">{userId}</span>
               </div>
             </div>
           </div>

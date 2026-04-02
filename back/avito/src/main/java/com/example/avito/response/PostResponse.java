@@ -1,6 +1,5 @@
 package com.example.avito.response;
 
-import com.example.avito.entity.Photo;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,7 +22,7 @@ public class PostResponse {
     private UserResponse author;
     private CategoryResponse category;
     private SubcategoryResponse subcategory;
-    private List<Photo> photos;
+    private List<PhotoResponse> photos;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

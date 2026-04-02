@@ -5,7 +5,8 @@ import PostList from './PostList.jsx';
 import './Home.css';
 
 function Home() {
-  const { apiService } = useContext(AuthContext);
+  const { apiService: contextApiService } = useContext(AuthContext);
+  const apiService = contextApiService;
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -38,6 +39,10 @@ function Home() {
     }
   };
 
+  const handlePageChange = (page) => {
+    fetchPosts(page);
+  };
+
   if (loading) {
     return (
       <div className="home-container">
@@ -48,26 +53,40 @@ function Home() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="home-container">
+        <div className="home-error">
+          <strong>Ошибка</strong>
+          {error}
+        </div>
+        <button className="retry-btn" onClick={fetchPosts}>Попробовать снова</button>
+      </div>
+    );
+  }
+
   return (
     <div className="home-container">
       <AuthBar />
 
       <main className="home-main">
         <div className="home-content-wrapper">
-          {error && (
-            <div className="home-error">
-              <strong>Ошибка</strong>
-              {error}
-            </div>
-          )}
-          <PostList
-            posts={posts}
-            loading={loading}
-            isAdmin={false}
-            pagination={pagination}
-            onPageChange={fetchPosts}
-            variant="list"
-          />
+          <section className="posts-section">
+            {error && (
+              <div className="home-error">
+                <strong>Ошибка</strong>
+                {error}
+              </div>
+            )}
+            <PostList
+              posts={posts}
+              loading={loading}
+              isAdmin={false}
+              pagination={pagination}
+              onPageChange={handlePageChange}
+              variant="grid"
+            />
+          </section>
         </div>
       </main>
     </div>

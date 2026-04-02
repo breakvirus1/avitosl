@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import Chat from './Chat';
 import './PostView.css';
 
-function PostView() {
+function PostViewForAuthor() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { isAuthenticated, apiService, user } = useAuth();
@@ -12,46 +11,12 @@ function PostView() {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [showChat, setShowChat] = useState(false);
-  const [chatReceiverId, setChatReceiverId] = useState(null);
-  const [chatReceiverName, setChatReceiverName] = useState('');
 
   React.useEffect(() => {
     if (isAuthenticated && id) {
       fetchPost();
     }
   }, [isAuthenticated, id]);
-
-  // Redirect to author view if user is the author
-  React.useEffect(() => {
-    if (post && isAuthenticated && user) {
-      const isOwner = post.author?.id === user?.id || post.author?.keycloakId === user?.sub;
-      if (isOwner) {
-        navigate(`/post/${id}/author`, { replace: true });
-      }
-    }
-  }, [post, isAuthenticated, user, id, navigate]);
-
-  // Check for pending chat from notification click
-  React.useEffect(() => {
-    const pendingChat = sessionStorage.getItem('pendingChat');
-    if (pendingChat && isAuthenticated) {
-      try {
-        const { receiverId, receiverName } = JSON.parse(pendingChat);
-        if (receiverId && receiverName) {
-          setChatReceiverId(receiverId);
-          setChatReceiverName(receiverName);
-          setShowChat(true);
-          // If postId is provided, we're on the post page already, chat will open
-          // If not, we might need to fetch the post data
-        }
-      } catch (err) {
-        console.error('Error parsing pending chat:', err);
-      } finally {
-        sessionStorage.removeItem('pendingChat');
-      }
-    }
-  }, [isAuthenticated]);
 
   const fetchPost = async () => {
     try {
@@ -74,20 +39,6 @@ function PostView() {
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Failed to delete post');
     }
-  };
-
-  const handleOpenChat = () => {
-    if (post?.author?.id) {
-      setChatReceiverId(post.author.id);
-      setChatReceiverName(post.author.firstName || 'Продавец');
-      setShowChat(true);
-    }
-  };
-
-  const handleCloseChat = () => {
-    setShowChat(false);
-    setChatReceiverId(null);
-    setChatReceiverName('');
   };
 
   const formatDate = (dateString) => {
@@ -131,7 +82,6 @@ function PostView() {
     setCurrentImageIndex(index);
   };
 
-  // Автоматическая смена изображений каждые 3 секунды
   useEffect(() => {
     if (!post || !post.photos || post.photos.length <= 1) return;
     
@@ -182,149 +132,6 @@ function PostView() {
   const currentIndex = currentImageIndex;
   const currentPhoto = photos[currentIndex];
   const photoUrl = currentPhoto ? getPhotoUrl(currentPhoto.id) : null;
-
-  // Если чат открыт, показываем его поверх объявления
-  if (showChat) {
-    return (
-      <>
-        <div className="post-view-container">
-          <button onClick={() => navigate('/')} className="post-view-back">
-            ← Назад к списку
-          </button>
-
-          <div className="post-view-content">
-            <div className="post-view-main">
-              <div className="post-view-header">
-                <h1 className="post-view-title">{post.title}</h1>
-                <div className="post-view-meta">
-                  <span className="post-view-date">
-                    {formatDate(post.createdAt)}
-                  </span>
-                  {post.category && (
-                    <span className="post-view-category">
-                      {post.category.name}
-                    </span>
-                  )}
-                  {post.subcategory && (
-                    <span className="post-view-subcategory">
-                      {post.subcategory.name}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {photos.length > 0 && (
-                <div className="post-view-image-container">
-                  <img
-                    src={photoUrl}
-                    alt={`${post.title} - фото ${currentIndex + 1}`}
-                    className="post-view-image"
-                  />
-                  {photos.length > 1 && (
-                    <>
-                      <button
-                        className="post-view-image-carousel-nav prev"
-                        onClick={handlePrevImage}
-                      >
-                        ‹
-                      </button>
-                      <button
-                        className="post-view-image-carousel-nav next"
-                        onClick={handleNextImage}
-                      >
-                        ›
-                      </button>
-                      <div className="post-view-image-carousel-dots">
-                        {photos.map((_, idx) => (
-                          <div
-                            key={idx}
-                            className={`post-view-image-carousel-dot ${idx === currentIndex ? 'active' : ''}`}
-                            onClick={(e) => handleDotClick(idx, e)}
-                          />
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
-
-              <div className="post-view-description">
-                <h3>Описание</h3>
-                <p>{post.description || 'Без описания'}</p>
-              </div>
-            </div>
-
-            <div className="post-view-sidebar">
-              <div className="post-view-price-card">
-                <div className="post-view-price">
-                  {formatPrice(post.price)}
-                </div>
-                <div className="post-view-status">
-                  {post.active ? (
-                    <span className="post-view-status-active">Активно</span>
-                  ) : (
-                    <span className="post-view-status-inactive">Неактивно</span>
-                  )}
-                </div>
-              </div>
-
-              <div className="post-view-author-card">
-                <h4>Продавец</h4>
-                {post.author && (
-                  <>
-                    <p className="post-view-author-name">
-                      {post.author.firstName} {post.author.lastName || ''}
-                    </p>
-                    <p className="post-view-author-email">
-                      {post.author.email}
-                    </p>
-                  </>
-                )}
-              </div>
-
-              <div className="post-view-actions">
-                <button
-                  className="post-view-contact-btn"
-                  onClick={handleOpenChat}
-                >
-                  Написать продавцу
-                </button>
-                {isOwner && (
-                  <>
-                    <button 
-                      className="post-view-edit-btn"
-                      onClick={() => navigate(`/edit-post/${post.id}`)}
-                    >
-                      Редактировать
-                    </button>
-                    <button 
-                      className="post-view-delete-btn"
-                      onClick={handleDeletePost}
-                    >
-                      Удалить
-                    </button>
-                  </>
-                )}
-              </div>
-
-              <div className="post-view-dates">
-                <p>Создано: {formatDate(post.createdAt)}</p>
-                {post.updatedAt && (
-                  <p>Обновлено: {formatDate(post.updatedAt)}</p>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-        <Chat
-          receiverId={chatReceiverId}
-          receiverName={chatReceiverName}
-          postId={post?.id}
-          onClose={handleCloseChat}
-        />
-      </>
-    );
-  }
 
   return (
     <div className="post-view-container">
@@ -423,12 +230,6 @@ function PostView() {
           </div>
 
           <div className="post-view-actions">
-            <button
-              className="post-view-contact-btn"
-              onClick={handleOpenChat}
-            >
-              Написать продавцу
-            </button>
             {isOwner && (
               <>
                 <button 
@@ -459,4 +260,4 @@ function PostView() {
   );
 }
 
-export default PostView;
+export default PostViewForAuthor;
