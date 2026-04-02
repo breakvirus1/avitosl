@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import Chat from './Chat';
@@ -8,32 +8,22 @@ function PostView() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { isAuthenticated, apiService, user } = useAuth();
-  const [post, setPost] = React.useState(null);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState(null);
+  const [post, setPost] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showChat, setShowChat] = useState(false);
   const [chatReceiverId, setChatReceiverId] = useState(null);
   const [chatReceiverName, setChatReceiverName] = useState('');
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isAuthenticated && id) {
       fetchPost();
     }
   }, [isAuthenticated, id]);
 
-  // Redirect to author view if user is the author
-  React.useEffect(() => {
-    if (post && isAuthenticated && user) {
-      const isOwner = post.author?.id === user?.id || post.author?.keycloakId === user?.sub;
-      if (isOwner) {
-        navigate(`/post/${id}/author`, { replace: true });
-      }
-    }
-  }, [post, isAuthenticated, user, id, navigate]);
-
   // Check for pending chat from notification click
-  React.useEffect(() => {
+  useEffect(() => {
     const pendingChat = sessionStorage.getItem('pendingChat');
     if (pendingChat && isAuthenticated) {
       try {

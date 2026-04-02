@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 
 function PostForm({ onFinish, categories }) {
   const [formData, setFormData] = useState({

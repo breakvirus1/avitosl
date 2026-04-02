@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import './CreatePostPage.css';
@@ -7,16 +7,16 @@ function CreatePostPage() {
   const navigate = useNavigate();
   const { isAuthenticated, apiService } = useAuth();
   const fileInputRef = useRef(null);
-  const [categories, setCategories] = React.useState([]);
-  const [loading, setLoading] = React.useState(true);
-  const [submitting, setSubmitting] = React.useState(false);
-  const [error, setError] = React.useState(null);
-  const [success, setSuccess] = React.useState(false);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(null);
   const [photos, setPhotos] = useState([]);
   const [createdPostId, setCreatedPostId] = useState(null);
 
-  const [formData, setFormData] = React.useState({
+  const [formData, setFormData] = useState({
     title: '',
     description: '',
     price: '',
@@ -24,13 +24,13 @@ function CreatePostPage() {
     subcategoryId: ''
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isAuthenticated) {
       fetchCategories();
     }
   }, [isAuthenticated]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (createdPostId) {
       fetchPhotos();
     }
