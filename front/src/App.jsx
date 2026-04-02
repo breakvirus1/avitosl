@@ -1,4 +1,3 @@
-import React from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthProvider'
 import PrivateRoute from './components/PrivateRoute.jsx'
@@ -8,7 +7,6 @@ import EditPostPage from './components/EditPostPage.jsx'
 import UserProfile from './components/UserProfile.jsx'
 import Callback from './components/Callback.jsx'
 import PostView from './components/PostView.jsx'
-import PostViewForAuthor from './components/PostViewForAuthor.jsx'
 import NotificationsPage from './components/NotificationsPage.jsx'
 
 function App() {
@@ -21,7 +19,6 @@ function App() {
           <Route path="/edit-post/:id" element={<PrivateRoute><EditPostPage /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><UserProfile /></PrivateRoute>} />
           <Route path="/post/:id" element={<PostView />} />
-          <Route path="/post/:id/author" element={<PrivateRoute><PostViewForAuthor /></PrivateRoute>} />
           <Route path="/notifications" element={<PrivateRoute><NotificationsPage /></PrivateRoute>} />
           <Route path="/callback" element={<Callback />} />
           <Route path="*" element={<Navigate to="/" />} />

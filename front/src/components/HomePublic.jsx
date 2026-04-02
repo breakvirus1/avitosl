@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
 import AuthApiService from '../services/auth-api';
 import AuthBar from './AuthBar.jsx';
