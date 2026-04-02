@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +27,7 @@ public class CommentService {
     private final PostRepository postRepository;
     private final CommentMapper commentMapper;
 
+    @CacheEvict(value = "commentsByPost", key = "#request.postId")
     public CommentResponse createComment(CommentRequest request, User author) {
         Post post = postRepository.findById(request.getPostId())
                 .orElseThrow(() -> new NotFoundException("Объявление не найдено"));
@@ -41,13 +43,29 @@ public class CommentService {
     }
 
     @Cacheable(value = "commentsByPost", key = "#postId")
+    @Transactional(readOnly = true)
     public List<CommentResponse> getCommentsByPost(Long postId) {
-        return commentMapper.toResponseList(commentRepository.findByPostId(postId));
+        List<Comment> comments = commentRepository.findByPostId(postId);
+        // Инициализируем lazy-поля author для каждого комментария
+        comments.forEach(comment -> {
+            if (comment.getAuthor() != null) {
+                comment.getAuthor().getId(); // trigger lazy loading
+            }
+        });
+        return commentMapper.toResponseList(comments);
     }
 
     @Cacheable(value = "commentsByUser", key = "#userId")
+    @Transactional(readOnly = true)
     public List<CommentResponse> getCommentsByUser(Long userId) {
-        return commentMapper.toResponseList(commentRepository.findByAuthorId(userId));
+        List<Comment> comments = commentRepository.findByAuthorId(userId);
+        // Инициализируем lazy-поля post для каждого комментария
+        comments.forEach(comment -> {
+            if (comment.getPost() != null) {
+                comment.getPost().getId(); // trigger lazy loading
+            }
+        });
+        return commentMapper.toResponseList(comments);
     }
 
     @CacheEvict(value = {"comment", "commentsByPost", "commentsByUser"}, allEntries = true)
