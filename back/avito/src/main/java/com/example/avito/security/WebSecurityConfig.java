@@ -46,7 +46,7 @@ public class WebSecurityConfig {
                     "/swagger-ui.html",
                     "/swagger-resources/**",
                     "/webjars/**",
-                    "/actuator/health/**", 
+                    "/actuator/health/**",
                     "/actuator/info").permitAll()
                 
                 // Эндпоинты для просмотра объявлений и категорий (только чтение)
@@ -56,6 +56,9 @@ public class WebSecurityConfig {
                     "/api/comments/post/**",
                     "/api/photos/post/**"
                 ).permitAll()
+                
+                // Доступ к файлам фото без аутентификации (должен быть ПЕРЕД общими /api/photos/*)
+                .requestMatchers("/api/photos/*/file").permitAll()
                 
                 // Эндпоинты для создания/редактирования требуют аутентификации
                 .requestMatchers(

@@ -2,12 +2,17 @@
 .auth-bar {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 12px;
   padding: 8px 12px;
   background: #ece9d8;
   border: 1px solid #003c74;
   border-radius: 3px;
   margin-bottom: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-left: 10px;
+  padding-right: 10px;
 }
 
 .auth-bar-username-btn {
@@ -83,4 +88,40 @@
   background: linear-gradient(to bottom, #ffe5e5 0%, #ffcccc 100%);
   border-color: #e60012;
   color: #e60012;
+}
+
+.auth-bar-notification-btn {
+  position: relative;
+  padding: 6px 12px;
+  border-radius: 3px;
+  border: 1px solid #7f9db9;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: linear-gradient(to bottom, #f0f0f0 0%, #d9d9d9 100%);
+  color: #000000;
+}
+
+.auth-bar-notification-btn:hover {
+  background: linear-gradient(to bottom, #e5f3ff 0%, #cce8ff 100%);
+  border-color: #2b579a;
+}
+
+.auth-bar-notification-count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background-color: #d32f2f;
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 2px solid #ece9d8;
+  font-family: 'Tahoma', sans-serif;
 }

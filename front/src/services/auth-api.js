@@ -98,6 +98,10 @@ class AuthApiService {
     return this.client.post('/categories', categoryData);
   }
 
+  getCurrentUser() {
+    return this.client.get('/users/me');
+  }
+
   updateCategory(id, categoryData) {
     return this.client.put(`/categories/${id}`, categoryData);
   }
@@ -169,12 +173,37 @@ class AuthApiService {
   }
 
   getPhotoUrl(photoId) {
-    return `/api/photos/${photoId}/file`;
-  }
+   return `/api/photos/${photoId}/file`;
+ }
 
-  deletePhoto(photoId) {
-    return this.client.delete(`/photos/${photoId}`);
-  }
+ deletePhoto(photoId) {
+   return this.client.delete(`/photos/${photoId}`);
+ }
+
+ // Chat methods
+ sendMessage(messageData) {
+   return this.client.post('/chat/messages', messageData);
+ }
+
+ getConversation(userId, page = 0, size = 50) {
+   return this.client.get(`/chat/conversation/${userId}`, { params: { page, size } });
+ }
+
+ getUnreadCount() {
+   return this.client.get('/chat/unread/count');
+ }
+
+ getUnreadMessages() {
+   return this.client.get('/chat/unread/messages');
+ }
+
+ markAsRead(messageId) {
+   return this.client.post(`/chat/messages/${messageId}/read`);
+ }
+
+ markAllAsRead(senderId) {
+   return this.client.post(`/chat/messages/read-all/${senderId}`);
+ }
 }
 
 export default AuthApiService;

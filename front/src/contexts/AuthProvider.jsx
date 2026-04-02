@@ -18,6 +18,7 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [unreadCount, setUnreadCount] = useState(0);
   
   // Используем ref для гарантии однократной обработки callback в рамках сессии
   const callbackProcessedRef = useRef(sessionStorage.getItem('callbackProcessed') === 'true');
@@ -205,6 +206,25 @@ export const AuthProvider = ({ children }) => {
     return new AuthApiService(() => getAccessToken());
   }, [getAccessToken]);
 
+  const fetchUnreadCount = useCallback(async () => {
+    if (!isAuthenticated) return;
+    try {
+      const response = await apiService.getUnreadCount();
+      setUnreadCount(response.data);
+    } catch (err) {
+      console.error('Failed to fetch unread count:', err);
+    }
+  }, [isAuthenticated, apiService]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchUnreadCount();
+      // Обновляем счетчик каждые 30 секунд
+      const interval = setInterval(fetchUnreadCount, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [isAuthenticated, fetchUnreadCount]);
+
   const value = {
     user,
     isAuthenticated,
@@ -214,7 +234,9 @@ export const AuthProvider = ({ children }) => {
     logout: handleLogout,
     getAccessToken,
     apiService,
-    clearError: () => setError(null)
+    clearError: () => setError(null),
+    unreadCount,
+    fetchUnreadCount
   };
 
   return (

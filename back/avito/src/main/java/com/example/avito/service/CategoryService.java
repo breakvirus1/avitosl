@@ -10,6 +10,8 @@ import com.example.avito.repository.SubcategoryRepository;
 import com.example.avito.request.CategoryRequest;
 import com.example.avito.response.CategoryResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +25,7 @@ public class CategoryService {
     private final CategoryMapper categoryMapper;
     private final SubcategoryRepository subcategoryRepository;
 
+    @CacheEvict(value = {"category", "categories"}, allEntries = true)
     @Transactional
     public CategoryResponse createCategory(CategoryRequest request) {
         if (categoryRepository.existsByName(request.getName())) {
@@ -49,16 +52,19 @@ public class CategoryService {
         return categoryMapper.toResponse(savedCategory);
     }
 
+    @Cacheable(value = "categories")
     public List<CategoryResponse> getAllCategories() {
         return categoryMapper.toResponseList(categoryRepository.findAll());
     }
 
+    @Cacheable(value = "category", key = "#id")
     public CategoryResponse getCategoryById(Long id) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Категория не найдена"));
         return categoryMapper.toResponse(category);
     }
 
+    @CacheEvict(value = {"category", "categories"}, allEntries = true)
     @Transactional
     public CategoryResponse updateCategory(Long id, CategoryRequest request) {
         Category category = categoryRepository.findById(id)
@@ -89,6 +95,7 @@ public class CategoryService {
         return categoryMapper.toResponse(category);
     }
 
+    @CacheEvict(value = {"category", "categories"}, allEntries = true)
     @Transactional
     public void deleteCategory(Long id) {
         if (!categoryRepository.existsById(id)) {
