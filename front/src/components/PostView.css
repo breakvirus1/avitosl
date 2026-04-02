@@ -3,6 +3,25 @@
   max-width: 1000px;
   margin: 0 auto;
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.post-view-wrapper {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.post-view-content,
+.post-view-comments-section {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.post-view-main {
+  width: 100%;
 }
 
 .post-view-back {

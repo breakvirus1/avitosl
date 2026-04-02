@@ -11,6 +11,7 @@ function Chat({ receiverId, receiverName, postId, onClose }) {
   const [error, setError] = useState(null);
   const messagesEndRef = useRef(null);
   const [currentUserId, setCurrentUserId] = useState(null);
+  const pollingRef = useRef(null);
 
   useEffect(() => {
     fetchCurrentUser();
@@ -19,6 +20,17 @@ function Chat({ receiverId, receiverName, postId, onClose }) {
   useEffect(() => {
     if (receiverId && currentUserId) {
       fetchMessages();
+      
+      // Запускаем polling для получения новых сообщений каждые 2 секунды
+      pollingRef.current = setInterval(() => {
+        fetchMessages(true);
+      }, 2000);
+      
+      return () => {
+        if (pollingRef.current) {
+          clearInterval(pollingRef.current);
+        }
+      };
     }
   }, [receiverId, currentUserId]);
 
@@ -36,14 +48,28 @@ function Chat({ receiverId, receiverName, postId, onClose }) {
     scrollToBottom();
   }, [messages]);
 
-  const fetchMessages = async () => {
+  const fetchMessages = async (isPolling = false) => {
     try {
-      setLoading(true);
-      const response = await apiService.getConversation(receiverId);
-      setMessages(response.data.content || []);
-      setError(null);
+      const response = await apiService.getConversation(receiverId, 0, 50);
+      const fetchedMessages = response.data.content || [];
+      
+      if (isPolling && messages.length > 0) {
+        // Проверяем, есть ли новые сообщения
+        const lastLocalMessage = messages[messages.length - 1];
+        const lastFetchedMessage = fetchedMessages[fetchedMessages.length - 1];
+        
+        if (lastFetchedMessage && (!lastLocalMessage || lastFetchedMessage.id !== lastLocalMessage.id)) {
+          // Есть новые сообщения, обновляем список
+          setMessages(fetchedMessages);
+        }
+      } else {
+        // Первоначальная загрузка
+        setMessages(fetchedMessages);
+        setLoading(false);
+      }
+      
       // Отмечаем все сообщения от этого отправителя как прочитанные
-      if (currentUserId && receiverId) {
+      if (currentUserId && receiverId && fetchedMessages.length > 0) {
         try {
           await apiService.markAllAsRead(receiverId);
           // Обновляем счетчик уведомлений
@@ -54,11 +80,14 @@ function Chat({ receiverId, receiverName, postId, onClose }) {
           console.error('Error marking messages as read:', markReadErr);
         }
       }
+      
+      setError(null);
     } catch (err) {
       console.error('Error fetching messages:', err);
       setError(err.response?.data?.message || 'Не удалось загрузить сообщения');
-    } finally {
-      setLoading(false);
+      if (!isPolling) {
+        setLoading(false);
+      }
     }
   };
 

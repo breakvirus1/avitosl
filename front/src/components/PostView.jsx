@@ -497,7 +497,7 @@ function PostView() {
   );
 
   return (
-    <>
+    <div className="post-view-wrapper">
       {renderPost()}
       {renderComments()}
       {showChat && (
@@ -508,7 +508,7 @@ function PostView() {
           onClose={handleCloseChat}
         />
       )}
-    </>
+    </div>
   );
 }
 
