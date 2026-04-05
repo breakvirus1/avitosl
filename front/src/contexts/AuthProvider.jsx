@@ -88,6 +88,10 @@ export const AuthProvider = ({ children }) => {
           
           if (isCallbackPage) {
             const user = await completeLogin();
+            console.log('User logged in:', user);
+            console.log('User profile:', user.profile);
+            console.log('Realm access:', user.profile?.realm_access);
+            console.log('Resource access:', user.profile?.resource_access);
             setUser(user);
             setIsAuthenticated(true);
             navigate('/', { replace: true });

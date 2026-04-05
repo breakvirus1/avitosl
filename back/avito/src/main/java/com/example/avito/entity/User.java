@@ -55,6 +55,7 @@ public class User {
     private String keycloakId;
 
     @Column(name = "is_enabled")
+    @Builder.Default
     private boolean enabled = true;
 
     @ManyToMany(fetch = FetchType.EAGER)

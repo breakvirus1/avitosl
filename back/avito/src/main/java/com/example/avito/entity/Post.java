@@ -49,6 +49,7 @@ public class Post {
     private BigDecimal price;
 
     @Column(name = "is_active")
+    @Builder.Default
     private boolean active = true;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -15,6 +15,12 @@
   padding-right: 10px;
 }
 
+.auth-bar-user-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .auth-bar-username-btn {
   font-size: 12px;
   color: #000000;
@@ -27,10 +33,33 @@
   transition: all 0.2s;
 }
 
+.auth-bar-roles {
+  font-size: 10px;
+  color: #666666;
+  font-family: 'Tahoma', sans-serif;
+}
+
 .auth-bar-username-btn:hover {
   background: linear-gradient(to bottom, #e5f3ff 0%, #cce8ff 100%);
   border-color: #2b579a;
   color: #2b579a;
+}
+
+.auth-bar-home-btn {
+  padding: 6px 12px;
+  border-radius: 3px;
+  border: 1px solid #003c74;
+  font-size: 12px;
+  font-weight: normal;
+  font-family: 'Tahoma', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: linear-gradient(to bottom, #2b579a 0%, #1e3f6f 100%);
+  color: white;
+}
+
+.auth-bar-home-btn:hover {
+  background: linear-gradient(to bottom, #1e3f6f 0%, #2b579a 100%);
 }
 
 .auth-bar-create-btn {
@@ -124,4 +153,21 @@
   padding: 0 4px;
   border: 2px solid #ece9d8;
   font-family: 'Tahoma', sans-serif;
+}
+
+.auth-bar-admin-btn {
+  padding: 6px 12px;
+  border-radius: 3px;
+  border: 1px solid #ffc107;
+  font-size: 12px;
+  font-weight: normal;
+  font-family: 'Tahoma', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: linear-gradient(to bottom, #ffc107 0%, #e0a800 100%);
+  color: #000000;
+}
+
+.auth-bar-admin-btn:hover {
+  background: linear-gradient(to bottom, #e0a800 0%, #ffc107 100%);
 }

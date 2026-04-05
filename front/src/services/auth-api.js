@@ -98,6 +98,18 @@ class AuthApiService {
     return this.client.post('/categories', categoryData);
   }
 
+  getSubcategories() {
+    return this.client.get('/subcategories');
+  }
+
+  getSubcategoriesByCategory(categoryId) {
+    return this.client.get(`/subcategories/category/${categoryId}`);
+  }
+
+  createSubcategory(subcategoryData) {
+    return this.client.post('/subcategories', subcategoryData);
+  }
+
   getCurrentUser() {
     return this.client.get('/users/me');
   }
@@ -203,6 +215,15 @@ class AuthApiService {
 
  markAllAsRead(senderId) {
    return this.client.post(`/chat/messages/read-all/${senderId}`);
+ }
+
+ // Fake Data methods
+ generateFakePosts(count) {
+   return this.client.post(`/fake-data/posts/${count}`);
+ }
+
+ clearAllPosts() {
+   return this.client.delete(`/fake-data/posts`);
  }
 }
 

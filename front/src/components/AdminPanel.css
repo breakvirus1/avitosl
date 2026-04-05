@@ -1,0 +1,276 @@
+/* Windows XP Style Admin Panel */
+.admin-panel {
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 16px;
+  background: #ece9d8;
+  border: 1px solid #003c74;
+  border-radius: 3px;
+  font-family: 'Tahoma', sans-serif;
+}
+
+.admin-panel h1 {
+  font-size: 18px;
+  font-weight: bold;
+  color: #003c74;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #003c74;
+}
+
+.admin-message {
+  padding: 8px 12px;
+  margin-bottom: 16px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+
+.admin-message-success {
+  background: #d4edda;
+  border: 1px solid #c3e6cb;
+  color: #155724;
+}
+
+.admin-message-error {
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  color: #721c24;
+}
+
+.admin-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #003c74;
+  padding-bottom: 8px;
+}
+
+.admin-tab {
+  padding: 6px 16px;
+  border-radius: 3px;
+  border: 1px solid #7f9db9;
+  font-size: 12px;
+  font-weight: normal;
+  font-family: 'Tahoma', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: linear-gradient(to bottom, #f0f0f0 0%, #d9d9d9 100%);
+  color: #000000;
+}
+
+.admin-tab:hover {
+  background: linear-gradient(to bottom, #e5f3ff 0%, #cce8ff 100%);
+  border-color: #2b579a;
+}
+
+.admin-tab-active {
+  background: linear-gradient(to bottom, #2b579a 0%, #1e3f6f 100%);
+  color: white;
+  border: 1px solid #003c74;
+}
+
+.admin-content {
+  background: white;
+  border: 1px solid #7f9db9;
+  border-radius: 3px;
+  padding: 16px;
+  min-height: 400px;
+}
+
+.admin-section h2 {
+  font-size: 14px;
+  font-weight: bold;
+  color: #003c74;
+  margin-bottom: 12px;
+}
+
+.admin-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #f0f0f0;
+  border: 1px solid #7f9db9;
+  border-radius: 3px;
+}
+
+.admin-form input,
+.admin-form textarea,
+.admin-form select {
+  padding: 6px 8px;
+  border: 1px solid #7f9db9;
+  border-radius: 3px;
+  font-size: 12px;
+  font-family: 'Tahoma', sans-serif;
+  background: white;
+  min-width: 150px;
+}
+
+.admin-form textarea {
+  min-width: 300px;
+  min-height: 60px;
+  resize: vertical;
+}
+
+.admin-form button {
+  padding: 6px 16px;
+  border-radius: 3px;
+  border: 1px solid #003c74;
+  font-size: 12px;
+  font-weight: normal;
+  font-family: 'Tahoma', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: linear-gradient(to bottom, #2b579a 0%, #1e3f6f 100%);
+  color: white;
+}
+
+.admin-form button:hover {
+  background: linear-gradient(to bottom, #1e3f6f 0%, #2b579a 100%);
+}
+
+.admin-form button[type="button"] {
+  background: linear-gradient(to bottom, #f0f0f0 0%, #d9d9d9 100%);
+  color: #000000;
+  border: 1px solid #7f9db9;
+}
+
+.admin-form button[type="button"]:hover {
+  background: linear-gradient(to bottom, #e5f3ff 0%, #cce8ff 100%);
+  border-color: #2b579a;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 12px;
+}
+
+.admin-table th,
+.admin-table td {
+  border: 1px solid #7f9db9;
+  padding: 8px;
+  text-align: left;
+}
+
+.admin-table th {
+  background: linear-gradient(to bottom, #2b579a 0%, #1e3f6f 100%);
+  color: white;
+  font-weight: bold;
+}
+
+.admin-table tr:nth-child(even) {
+  background: #f0f0f0;
+}
+
+.admin-table tr:hover {
+  background: #e5f3ff;
+}
+
+.admin-table button {
+  padding: 4px 8px;
+  border-radius: 3px;
+  border: 1px solid #7f9db9;
+  font-size: 11px;
+  font-family: 'Tahoma', sans-serif;
+  cursor: pointer;
+  margin-right: 4px;
+  transition: all 0.2s;
+  background: linear-gradient(to bottom, #f0f0f0 0%, #d9d9d9 100%);
+  color: #000000;
+}
+
+.admin-table button:hover {
+  background: linear-gradient(to bottom, #e5f3ff 0%, #cce8ff 100%);
+  border-color: #2b579a;
+}
+
+/* Fake Data Section */
+.fake-data-controls {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding: 16px;
+  background: #f0f0f0;
+  border: 1px solid #7f9db9;
+  border-radius: 3px;
+}
+
+.fake-data-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fake-data-input label {
+  font-size: 12px;
+  font-weight: bold;
+  color: #003c74;
+}
+
+.fake-data-input input {
+  padding: 6px 8px;
+  border: 1px solid #7f9db9;
+  border-radius: 3px;
+  font-size: 12px;
+  width: 80px;
+}
+
+.fake-data-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.fake-generate-btn {
+  background: linear-gradient(to bottom, #28a745 0%, #1e7e34 100%) !important;
+  color: white !important;
+  border-color: #1e7e34 !important;
+}
+
+.fake-generate-btn:hover {
+  background: linear-gradient(to bottom, #1e7e34 0%, #28a745 100%) !important;
+}
+
+.fake-clear-btn {
+  background: linear-gradient(to bottom, #dc3545 0%, #c82333 100%) !important;
+  color: white !important;
+  border-color: #c82333 !important;
+}
+
+.fake-clear-btn:hover {
+  background: linear-gradient(to bottom, #c82333 0%, #dc3545 100%) !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .admin-panel {
+    margin: 10px;
+    padding: 8px;
+  }
+  
+  .admin-tabs {
+    flex-wrap: wrap;
+  }
+  
+  .admin-form {
+    flex-direction: column;
+  }
+  
+  .admin-form input,
+  .admin-form textarea,
+  .admin-form select {
+    width: 100%;
+  }
+  
+  .admin-table {
+    display: block;
+    overflow-x: auto;
+  }
+  
+  .fake-data-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

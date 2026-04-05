@@ -71,7 +71,10 @@ public class UserService {
 
     @CacheEvict(value = {"user", "users"}, allEntries = true)
     public void deleteUser(Long id) {
-        userRepository.deleteById(id);
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        user.setEnabled(false);
+        userRepository.save(user);
     }
 
     @Cacheable(value = "users")

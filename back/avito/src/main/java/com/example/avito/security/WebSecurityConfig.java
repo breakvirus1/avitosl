@@ -97,6 +97,20 @@ public class WebSecurityConfig {
                 }
             }
             
+            // resource_access.client roles (роли клиента)
+            if (claims.containsKey("resource_access")) {
+                java.util.Map<String, Object> resourceAccess = (java.util.Map<String, Object>) claims.get("resource_access");
+                if (resourceAccess.containsKey("avitofrontend")) {
+                    java.util.Map<String, Object> clientRoles = (java.util.Map<String, Object>) resourceAccess.get("avitofrontend");
+                    if (clientRoles.containsKey("roles")) {
+                        java.util.List<String> roles = (java.util.List<String>) clientRoles.get("roles");
+                        for (String role : roles) {
+                            authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
+                        }
+                    }
+                }
+            }
+            
             // groups
             if (claims.containsKey("groups")) {
                 java.util.List<String> groups = (java.util.List<String>) claims.get("groups");

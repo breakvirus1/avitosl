@@ -111,6 +111,31 @@ public class CommentController {
     }
 
     @Operation(
+        summary = "Получение всех комментариев (для администраторов)",
+        description = "Возвращает список всех комментариев в системе. Доступно только администраторам",
+        responses = {
+            @ApiResponse(
+                responseCode = "200",
+                description = "Список комментариев успешно получен",
+                content = @Content(schema = @Schema(implementation = CommentResponse.class, type = "array"))
+            ),
+            @ApiResponse(
+                responseCode = "403",
+                description = "Доступ запрещен. Требуется роль администратора"
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "Внутренняя ошибка сервера"
+            )
+        }
+    )
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<CommentResponse>> getAllComments() {
+        return ResponseEntity.ok(commentService.getAllComments());
+    }
+
+    @Operation(
         summary = "Создание комментария",
         description = "Создает новый комментарий к объявлению. Требует аутентификации. Автором комментария является текущий пользователь",
         responses = {

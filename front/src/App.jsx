@@ -8,6 +8,7 @@ import UserProfile from './components/UserProfile.jsx'
 import Callback from './components/Callback.jsx'
 import PostView from './components/PostView.jsx'
 import NotificationsPage from './components/NotificationsPage.jsx'
+import AdminPanel from './components/AdminPanel.jsx'
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
           <Route path="/profile" element={<PrivateRoute><UserProfile /></PrivateRoute>} />
           <Route path="/post/:id" element={<PostView />} />
           <Route path="/notifications" element={<PrivateRoute><NotificationsPage /></PrivateRoute>} />
+          <Route path="/admin-panel" element={<PrivateRoute><AdminPanel /></PrivateRoute>} />
           <Route path="/callback" element={<Callback />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
