@@ -217,14 +217,31 @@ class AuthApiService {
    return this.client.post(`/chat/messages/read-all/${senderId}`);
  }
 
- // Fake Data methods
- generateFakePosts(count) {
-   return this.client.post(`/fake-data/posts/${count}`);
- }
+  // Purchase methods
+  getUserPurchases(page = 0, size = 20) {
+    return this.client.get('/purchases', { params: { page, size } });
+  }
 
- clearAllPosts() {
-   return this.client.delete(`/fake-data/posts`);
- }
+  getWalletBalance() {
+    return this.client.get('/purchases/wallet/balance');
+  }
+
+  addFundsToWallet(amount) {
+    return this.client.post(`/purchases/wallet/add-funds?amount=${amount}`);
+  }
+
+  purchasePost(postId) {
+    return this.client.post(`/purchases/posts/${postId}`);
+  }
+
+  // Fake Data methods
+  generateFakePosts(count) {
+    return this.client.post(`/fake-data/posts/${count}`);
+  }
+
+  clearAllPosts() {
+    return this.client.delete(`/fake-data/posts`);
+  }
 }
 
 export default AuthApiService;

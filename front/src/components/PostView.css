@@ -737,8 +737,77 @@
    align-items: stretch;
  }
  
- .post-view-comment-actions {
-   justify-content: flex-end;
-   margin-top: 8px;
- }
+  .post-view-comment-actions {
+    justify-content: flex-end;
+    margin-top: 8px;
+  }
+}
+
+/* PostViewPublic Styles */
+.post-view-public-notice {
+  margin-top: 16px;
+  padding: 12px;
+  border: 1px solid #0078d4;
+  border-radius: 3px;
+  background: #e6f3ff;
+  text-align: center;
+}
+
+.post-view-public-notice p {
+  margin: 0 0 8px 0;
+  font-size: 12px;
+  color: #333;
+  font-family: 'Tahoma', sans-serif;
+}
+
+.post-view-login-btn {
+  padding: 6px 12px;
+  border: 1px solid #0078d4;
+  border-radius: 2px;
+  background: #0078d4;
+  color: white;
+  font-size: 11px;
+  font-family: 'Tahoma', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.post-view-login-btn:hover {
+  background: #106ebe;
+  border-color: #106ebe;
+}
+
+/* BoughtPost Styles */
+.post-view-status-purchased {
+  color: #28a745;
+  font-weight: bold;
+  background: #d4edda;
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+
+.post-view-purchase-info {
+  margin-top: 16px;
+  padding: 12px;
+  border: 1px solid #28a745;
+  border-radius: 3px;
+  background: #f8fff9;
+}
+
+.post-view-purchase-info h4 {
+  margin: 0 0 8px 0;
+  color: #28a745;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.post-view-purchase-info p {
+  margin: 4px 0;
+  font-size: 12px;
+  color: #333;
+}
+
+.post-view-purchase-info strong {
+  color: #28a745;
 }

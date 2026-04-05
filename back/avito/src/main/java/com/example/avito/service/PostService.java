@@ -176,4 +176,8 @@ public class PostService {
     public Page<PostResponse> getPostsByUser(Long userId, Pageable pageable) {
         return postRepository.findByAuthorId(userId, pageable).map(postMapper::toResponse);
     }
+
+    public Post savePost(Post post) {
+        return postRepository.save(post);
+    }
 }

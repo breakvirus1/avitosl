@@ -67,9 +67,9 @@ function Home() {
 
   return (
     <div className="home-container">
-      <AuthBar />
+      <main className="home-main" style={{ maxWidth: '800px', margin: '0 auto', width: '100%' }}>
+        <AuthBar />
 
-      <main className="home-main">
         <div className="home-content-wrapper">
           <section className="posts-section">
             {error && (

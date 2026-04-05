@@ -61,7 +61,13 @@ export const AuthProvider = ({ children }) => {
       try {
         const currentUser = await getUser();
         if (currentUser) {
-          setUser(currentUser);
+          // Формируем правильный объект user с id и sub из profile
+          const enrichedUser = {
+            ...currentUser,
+            id: currentUser.profile?.sub, // Используем sub как id
+            sub: currentUser.profile?.sub
+          };
+          setUser(enrichedUser);
           setIsAuthenticated(true);
         }
       } catch (err) {
@@ -92,7 +98,15 @@ export const AuthProvider = ({ children }) => {
             console.log('User profile:', user.profile);
             console.log('Realm access:', user.profile?.realm_access);
             console.log('Resource access:', user.profile?.resource_access);
-            setUser(user);
+
+            // Формируем правильный объект user с id и sub из profile
+            const enrichedUser = {
+              ...user,
+              id: user.profile?.sub, // Используем sub как id
+              sub: user.profile?.sub
+            };
+
+            setUser(enrichedUser);
             setIsAuthenticated(true);
             navigate('/', { replace: true });
           } else {

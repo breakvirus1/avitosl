@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import AuthBar from './AuthBar';
 import './Notifications.css';
 
 function NotificationsPage() {
@@ -83,7 +84,9 @@ function NotificationsPage() {
 
   return (
     <div className="notifications-page">
-      <div className="notifications-page-container">
+      <div style={{ maxWidth: '800px', margin: '0 auto', width: '100%' }}>
+        <AuthBar />
+        <div className="notifications-page-container">
         <div className="notifications-page-header">
           <h1>Уведомления</h1>
           <button className="notifications-back-btn" onClick={() => navigate(-1)}>
@@ -125,6 +128,7 @@ function NotificationsPage() {
               ))}
             </ul>
           )}
+        </div>
         </div>
       </div>
     </div>

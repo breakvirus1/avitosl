@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import AuthBar from './AuthBar';
 import Chat from './Chat';
 import './PostView.css';
 
@@ -158,6 +159,21 @@ function PostView() {
     setShowChat(false);
     setChatReceiverId(null);
     setChatReceiverName('');
+  };
+
+  const handlePurchasePost = async () => {
+    if (!window.confirm(`Вы уверены, что хотите купить "${post.title}" за ${formatPrice(post.price)}?`)) {
+      return;
+    }
+
+    try {
+      await apiService.purchasePost(id);
+      alert('Покупка успешно совершена!');
+      navigate('/profile'); // Redirect to profile to see purchases
+    } catch (err) {
+      console.error('Error purchasing post:', err);
+      alert(err.response?.data?.message || 'Ошибка при покупке объявления');
+    }
   };
 
   const formatDate = (dateString) => {
@@ -357,15 +373,23 @@ function PostView() {
             >
               Написать продавцу
             </button>
+            {!isOwner && post.active && (
+              <button
+                className="post-view-purchase-btn"
+                onClick={handlePurchasePost}
+              >
+                Купить
+              </button>
+            )}
             {isOwner && (
               <>
-                <button 
+                <button
                   className="post-view-edit-btn"
                   onClick={() => navigate(`/edit-post/${post.id}`)}
                 >
                   Редактировать
                 </button>
-                <button 
+                <button
                   className="post-view-delete-btn"
                   onClick={handleDeletePost}
                 >
@@ -498,7 +522,9 @@ function PostView() {
 
   return (
     <div className="post-view-wrapper">
-      {renderPost()}
+      <div style={{ maxWidth: '800px', margin: '0 auto', width: '100%' }}>
+        <AuthBar />
+        {renderPost()}
       {renderComments()}
       {showChat && (
         <Chat
@@ -508,6 +534,7 @@ function PostView() {
           onClose={handleCloseChat}
         />
       )}
+      </div>
     </div>
   );
 }

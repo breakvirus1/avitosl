@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import AuthBar from './AuthBar';
 import './CreatePostPage.css';
 
 function CreatePostPage() {
@@ -172,7 +173,9 @@ function CreatePostPage() {
 
   return (
     <div className="create-post-container">
-      <div className="create-post-header">
+      <div style={{ maxWidth: '800px', margin: '0 auto', width: '100%' }}>
+        <AuthBar />
+        <div className="create-post-header">
         <h1>Создать объявление</h1>
         <button
           className="cancel-btn"
@@ -339,6 +342,7 @@ function CreatePostPage() {
             </div>
           </div>
         )}
+        </div>
       </div>
     </div>
   );

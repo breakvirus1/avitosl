@@ -405,9 +405,14 @@ const AdminPanel = () => {
   const handleGenerateFakePosts = async () => {
     try {
       await apiService.generateFakePosts(fakePostCount);
-      showMessage('success', `Создано ${fakePostCount} фейковых объявлений`);
+      showMessage('success', `Создано ${fakePostCount} фейковых объявлений. Страница будет перезагружена для обновления данных.`);
+      // Обновляем данные в AdminPanel
       const res = await apiService.getPosts(0, 100);
       setPosts(res.data.content);
+      // Перезагружаем страницу через 2 секунды, чтобы пользователь увидел сообщение
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
     } catch (_) {
       showMessage('error', 'Ошибка генерации фейковых данных');
     }
@@ -436,8 +441,9 @@ const AdminPanel = () => {
 
   return (
     <div className="admin-panel">
-      <AuthBar />
-      <h1>Admin Panel</h1>
+      <div style={{ maxWidth: '800px', margin: '0 auto', width: '100%' }}>
+        <AuthBar />
+        <h1>Admin Panel</h1>
       
       {message.text && (
         <div className={`admin-message admin-message-${message.type}`}>
@@ -765,6 +771,7 @@ const AdminPanel = () => {
             </div>
           </div>
         )}
+      </div>
       </div>
     </div>
   );

@@ -122,4 +122,17 @@ public class UserService {
     public User saveUser(User user) {
         return userRepository.save(user);
     }
+
+    public java.math.BigDecimal getUserWalletBalance(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        return user.getWalletBalance();
+    }
+
+    public void addFundsToWallet(Long userId, java.math.BigDecimal amount) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        user.setWalletBalance(user.getWalletBalance().add(amount));
+        userRepository.save(user);
+    }
 }

@@ -21,6 +21,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.EqualsAndHashCode;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -77,11 +78,20 @@ public class User {
     @Builder.Default
     private Set<Comment> comments = new HashSet<>();
 
+    @JsonIgnore
+    @OneToMany(mappedBy = "buyer", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<Purchase> purchases = new HashSet<>();
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "wallet_balance", precision = 15, scale = 2)
+    @Builder.Default
+    private BigDecimal walletBalance = BigDecimal.ZERO;
 
     @PrePersist
     protected void onCreate() {
