@@ -177,6 +177,7 @@ class UserServiceTest {
     void updateUser_shouldThrowNotFoundExceptionWhenUserNotFound() {
         // Given
         RegisterRequest request = new RegisterRequest("Updated", null, null, null, null);
+        User author = new User();
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
         // When & Then
