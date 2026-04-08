@@ -2,16 +2,14 @@
 FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /app
 
-# Copy parent POM first (from root of build context)
-COPY pom.xml .
-COPY user-service/pom.xml user-service/pom.xml
-COPY user-service/src user-service/src
+COPY microservices/user-service/pom.xml pom.xml
+COPY microservices/user-service/src src
 
-RUN mvn clean package -DskipTests -f user-service/pom.xml
+RUN mvn clean package -DskipTests
 
 # Runtime stage
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
-COPY --from=build /app/user-service/target/*.jar app.jar
+COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8081
 ENTRYPOINT ["java", "-jar", "app.jar"]

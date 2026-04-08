@@ -24,8 +24,8 @@ services:
   # Eureka Server (Service Registry)
   eureka-server:
     build:
-      context: .
-      dockerfile: eureka-server/Dockerfile
+      context: ..
+      dockerfile: microservices/eureka-server/Dockerfile
     container_name: avito-eureka-server
     ports:
       - "8761:8761"
@@ -42,8 +42,8 @@ services:
   # API Gateway
   api-gateway:
     build:
-      context: .
-      dockerfile: api-gateway/Dockerfile
+      context: ..
+      dockerfile: microservices/api-gateway/Dockerfile
     container_name: avito-api-gateway
     ports:
       - "8081:8080"
@@ -63,8 +63,8 @@ services:
   # User Service
   user-service:
     build:
-      context: .
-      dockerfile: user-service/Dockerfile
+      context: ..
+      dockerfile: microservices/user-service/Dockerfile
     container_name: avito-user-service
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/avito_user_db
@@ -82,8 +82,8 @@ services:
   # Category Service
   category-service:
     build:
-      context: .
-      dockerfile: category-service/Dockerfile
+      context: ..
+      dockerfile: microservices/category-service/Dockerfile
     container_name: avito-category-service
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/avito_category_db
@@ -101,8 +101,8 @@ services:
   # Post Service
   post-service:
     build:
-      context: .
-      dockerfile: post-service/Dockerfile
+      context: ..
+      dockerfile: microservices/post-service/Dockerfile
     container_name: avito-post-service
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/avito_post_db
@@ -120,8 +120,8 @@ services:
   # Chat Service
   chat-service:
     build:
-      context: .
-      dockerfile: chat-service/Dockerfile
+      context: ..
+      dockerfile: microservices/chat-service/Dockerfile
     container_name: avito-chat-service
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/avito_chat_db
@@ -139,8 +139,8 @@ services:
   # Purchase Service
   purchase-service:
     build:
-      context: .
-      dockerfile: purchase-service/Dockerfile
+      context: ..
+      dockerfile: microservices/purchase-service/Dockerfile
     container_name: avito-purchase-service
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/avito_purchase_db

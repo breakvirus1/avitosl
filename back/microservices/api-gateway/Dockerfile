@@ -2,16 +2,14 @@
 FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /app
 
-# Copy parent POM first (from root of build context)
-COPY pom.xml .
-COPY api-gateway/pom.xml api-gateway/pom.xml
-COPY api-gateway/src api-gateway/src
+COPY microservices/api-gateway/pom.xml pom.xml
+COPY microservices/api-gateway/src src
 
-RUN mvn clean package -DskipTests -f api-gateway/pom.xml
+RUN mvn clean package -DskipTests
 
 # Runtime stage
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
-COPY --from=build /app/api-gateway/target/*.jar app.jar
+COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
