@@ -29,6 +29,8 @@ services:
     container_name: avito-eureka-server
     ports:
       - "8761:8761"
+    environment:
+      SPRING_CLOUD_COMPATIBILITY_VERIFIER_ENABLED: "false"
     restart: unless-stopped
     networks:
       - avito-network
