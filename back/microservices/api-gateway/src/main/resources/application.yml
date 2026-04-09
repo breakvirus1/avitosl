@@ -1,6 +1,32 @@
 spring:
-  autoconfigure:
-    exclude:
-      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
-      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
-      - org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
+  cloud:
+    compatibility-verifier:
+      enabled: false
+    gateway:
+      routes:
+        - id: user-service
+          uri: http://user-service:8081
+          predicates:
+            - Path=/api/users/**
+        - id: category-service
+          uri: http://category-service:8082
+          predicates:
+            - Path=/api/categories/**
+        - id: post-service
+          uri: http://post-service:8083
+          predicates:
+            - Path=/api/posts/**
+        - id: chat-service
+          uri: http://chat-service:8084
+          predicates:
+            - Path=/api/chat/**
+        - id: purchase-service
+          uri: http://purchase-service:8085
+          predicates:
+            - Path=/api/purchases/**
+        - id: eureka-server
+          uri: http://eureka-server:8761
+          predicates:
+            - Path=/eureka/**
+
+
