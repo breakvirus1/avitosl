@@ -11,8 +11,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ChatMessageResponse {
     private Long id;
-    private Long senderId;
-    private Long receiverId;
+    private String senderKeycloakId;
+    private String receiverKeycloakId;
     private String message;
     private Boolean isRead;
     private LocalDateTime createdAt;

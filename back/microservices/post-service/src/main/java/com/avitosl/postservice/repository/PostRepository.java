@@ -8,7 +8,7 @@ import java.util.List;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
-    List<Post> findByUserId(Long userId);
+    List<Post> findByKeycloakId(String keycloakId);
     List<Post> findByCategoryId(Long categoryId);
     List<Post> findBySubcategoryId(Long subcategoryId);
     List<Post> findByIsActiveTrue();

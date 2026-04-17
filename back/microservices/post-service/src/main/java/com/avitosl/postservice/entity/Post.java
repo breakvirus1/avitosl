@@ -1,9 +1,12 @@
 package com.avitosl.postservice.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -11,13 +14,17 @@ import java.util.Set;
 
 @Entity
 @Table(name = "posts")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Post {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @Column(nullable = false)
@@ -29,8 +36,8 @@ public class Post {
     @Column(name = "price", nullable = false)
     private Double price;
 
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @Column(name = "keycloak_id", nullable = false)
+    private String keycloakId;
 
     @Column(name = "category_id")
     private Long categoryId;
@@ -48,9 +55,11 @@ public class Post {
     private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
     private Set<Photo> photos = new HashSet<>();
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
     private Set<Comment> comments = new HashSet<>();
 
     @PrePersist

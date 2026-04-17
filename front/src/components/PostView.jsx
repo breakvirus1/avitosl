@@ -76,29 +76,30 @@ function PostView() {
     }
   };
 
-  const handleCreateComment = async (e) => {
-    e.preventDefault();
-    if (!commentText.trim()) return;
-    
-    try {
-      await apiService.createComment({
-        text: commentText.trim(),
-        postId: parseInt(id)
-      });
-      setCommentText('');
-      fetchComments();
-    } catch (err) {
-      console.error('Error creating comment:', err);
-      alert(err.response?.data?.message || 'Ошибка при создании комментария');
-    }
-  };
+   const handleCreateComment = async (e) => {
+     e.preventDefault();
+     if (!commentText.trim()) return;
+     
+     try {
+       await apiService.createComment({
+         content: commentText.trim(),
+         postId: parseInt(id)
+         // userId берется из токена на бэкенде
+       });
+       setCommentText('');
+       fetchComments();
+     } catch (err) {
+       console.error('Error creating comment:', err);
+       alert(err.response?.data?.message || 'Ошибка при создании комментария');
+     }
+   };
 
   const handleUpdateComment = async (commentId) => {
     if (!editingText.trim()) return;
     
     try {
       await apiService.updateComment(commentId, {
-        text: editingText.trim(),
+        content: editingText.trim(),
         postId: parseInt(id)
       });
       setEditingCommentId(null);
@@ -126,7 +127,7 @@ function PostView() {
 
   const startEditing = (comment) => {
     setEditingCommentId(comment.id);
-    setEditingText(comment.text);
+    setEditingText(comment.content);
   };
 
   const cancelEditing = () => {
@@ -134,8 +135,8 @@ function PostView() {
     setEditingText('');
   };
 
-  const isCommentOwner = (commentAuthor) => {
-    return commentAuthor?.id === user?.id || commentAuthor?.keycloakId === user?.sub;
+  const isCommentOwner = (comment) => {
+    return comment.userId === user?.id;
   };
 
   const handleDeletePost = async () => {
@@ -148,8 +149,8 @@ function PostView() {
   };
 
   const handleOpenChat = () => {
-    if (post?.author?.id) {
-      setChatReceiverId(post.author.id);
+    if (post?.author?.keycloakId) {
+      setChatReceiverId(post.author.keycloakId);
       setChatReceiverName(post.author.firstName || 'Продавец');
       setShowChat(true);
     }
@@ -193,7 +194,7 @@ function PostView() {
   };
 
   const getPhotoUrl = (photoId) => {
-    return `http://localhost:8081/api/photos/${photoId}/file`;
+    return `/api/photos/${photoId}/file`;
   };
 
   const handleNextImage = (e) => {
@@ -447,11 +448,11 @@ function PostView() {
         ) : (
           comments.map((comment) => (
             <div key={comment.id} className="post-view-comment-item">
-              <div className="post-view-comment-header">
-                <div className="post-view-comment-author">
-                  <span className="post-view-comment-author-name">
-                    {comment.author?.firstName} {comment.author?.lastName || ''}
-                  </span>
+               <div className="post-view-comment-header">
+                 <div className="post-view-comment-author">
+                   <span className="post-view-comment-author-name">
+                     {comment.authorFirstName || 'Пользователь'} {comment.authorLastName || ''}
+                   </span>
                   <span className="post-view-comment-date">
                     {formatDate(comment.createdAt)}
                   </span>
@@ -460,7 +461,7 @@ function PostView() {
                   )}
                 </div>
                 
-                {isAuthenticated && isCommentOwner(comment.author) && (
+                {isAuthenticated && isCommentOwner(comment) && (
                   <div className="post-view-comment-actions">
                     {editingCommentId === comment.id ? (
                       <>
@@ -510,7 +511,7 @@ function PostView() {
                     maxLength="2000"
                   />
                 ) : (
-                  <p>{comment.text}</p>
+                   <p>{comment.content}</p>
                 )}
               </div>
             </div>

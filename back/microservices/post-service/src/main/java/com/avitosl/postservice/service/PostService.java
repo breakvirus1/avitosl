@@ -31,9 +31,9 @@ public class PostService {
     public Post createPost(Post post) {
         // Проверяем существование пользователя через Feign вызов
         try {
-            UserResponse user = userServiceClient.getUserById(post.getUserId());
+            UserResponse user = userServiceClient.getUserByKeycloakId(post.getKeycloakId());
             if (user == null) {
-                throw new NotFoundException("User not found with id: " + post.getUserId());
+                throw new NotFoundException("User not found with keycloakId: " + post.getKeycloakId());
             }
         } catch (RuntimeException e) {
             // Обработка fallback и других исключений
@@ -67,8 +67,8 @@ public class PostService {
                 .orElseThrow(() -> new NotFoundException("Post not found with id: " + id));
     }
 
-    public List<Post> getPostsByUserId(Long userId) {
-        return postRepository.findByUserId(userId);
+    public List<Post> getPostsByKeycloakId(String keycloakId) {
+        return postRepository.findByKeycloakId(keycloakId);
     }
 
     public List<Post> getPostsByCategoryId(Long categoryId) {

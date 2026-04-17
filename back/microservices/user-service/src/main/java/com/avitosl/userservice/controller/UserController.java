@@ -18,6 +18,12 @@ public class UserController {
 
     private final UserService userService;
 
+    @PostMapping
+    public ResponseEntity<UserResponse> createUser(@Valid @RequestBody User user) {
+        User createdUser = userService.createUser(user);
+        return ResponseEntity.ok(mapToResponse(createdUser));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
         User user = userService.getUserById(id);
@@ -27,6 +33,12 @@ public class UserController {
     @GetMapping("/username/{username}")
     public ResponseEntity<UserResponse> getUserByUsername(@PathVariable String username) {
         User user = userService.getUserByUsername(username);
+        return ResponseEntity.ok(mapToResponse(user));
+    }
+
+    @GetMapping("/keycloak/{keycloakId}")
+    public ResponseEntity<UserResponse> getUserByKeycloakId(@PathVariable String keycloakId) {
+        User user = userService.getUserByKeycloakId(keycloakId);
         return ResponseEntity.ok(mapToResponse(user));
     }
 
@@ -59,6 +71,7 @@ public class UserController {
                 user.getFirstName(),
                 user.getLastName(),
                 user.getPhoneNumber(),
+                user.getKeycloakId(),
                 user.getWalletBalance(),
                 user.getEnabled(),
                 user.getCreatedAt(),

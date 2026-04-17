@@ -7,13 +7,14 @@ services:
       POSTGRES_DB: avitodb
       POSTGRES_USER: user
       POSTGRES_PASSWORD: 111111
+      PGPORT: 5433
     ports:
-      - "5433:5432"
+       - "5433:5433"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user -d avitodb"]
+      test: ["CMD-SHELL", "pg_isready -U user -d avitodb -p 5433"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -49,6 +50,11 @@ services:
     container_name: avito-api-gateway
     ports:
       - "8081:8080"
+    environment:
+      SPRING_APPLICATION_NAME: api-gateway
+      SERVER_PORT: 8080
+      EUREKA_CLIENT_ENABLED: "true"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
     depends_on:
       eureka-server:
         condition: service_healthy
@@ -64,22 +70,28 @@ services:
 
   # User Service
   user-service:
-    build:
-      context: ..
-      dockerfile: microservices/user-service/Dockerfile
-    container_name: avito-user-service
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/avito_user_db
-      SPRING_DATASOURCE_USERNAME: user
-      SPRING_DATASOURCE_PASSWORD: 111111
-    depends_on:
-      postgres:
-        condition: service_healthy
-      eureka-server:
-        condition: service_healthy
-    restart: unless-stopped
-    networks:
-      - avito-network
+     build:
+       context: ..
+       dockerfile: microservices/user-service/Dockerfile
+     container_name: avito-user-service
+     environment:
+       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5433/avito_user_db
+       SPRING_DATASOURCE_USERNAME: user
+       SPRING_DATASOURCE_PASSWORD: 111111
+       SPRING_APPLICATION_NAME: user-service
+       EUREKA_CLIENT_ENABLED: "true"
+       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+       KEYCLOAK_AUTH_SERVER_URL: http://avitosl-keycloak:8080
+     depends_on:
+       postgres:
+         condition: service_healthy
+       eureka-server:
+         condition: service_healthy
+       keycloak:
+         condition: service_started
+     restart: unless-stopped
+     networks:
+       - avito-network
 
   # Category Service
   category-service:
@@ -88,9 +100,12 @@ services:
       dockerfile: microservices/category-service/Dockerfile
     container_name: avito-category-service
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/avito_category_db
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5433/avito_category_db
       SPRING_DATASOURCE_USERNAME: user
       SPRING_DATASOURCE_PASSWORD: 111111
+      SPRING_APPLICATION_NAME: category-service
+      EUREKA_CLIENT_ENABLED: "true"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
     depends_on:
       postgres:
         condition: service_healthy
@@ -107,9 +122,12 @@ services:
       dockerfile: microservices/post-service/Dockerfile
     container_name: avito-post-service
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/avito_post_db
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5433/avito_post_db
       SPRING_DATASOURCE_USERNAME: user
       SPRING_DATASOURCE_PASSWORD: 111111
+      SPRING_APPLICATION_NAME: post-service
+      EUREKA_CLIENT_ENABLED: "true"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
     depends_on:
       postgres:
         condition: service_healthy
@@ -126,9 +144,12 @@ services:
       dockerfile: microservices/chat-service/Dockerfile
     container_name: avito-chat-service
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/avito_chat_db
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5433/avito_chat_db
       SPRING_DATASOURCE_USERNAME: user
       SPRING_DATASOURCE_PASSWORD: 111111
+      SPRING_APPLICATION_NAME: chat-service
+      EUREKA_CLIENT_ENABLED: "true"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
     depends_on:
       postgres:
         condition: service_healthy
@@ -145,9 +166,12 @@ services:
       dockerfile: microservices/purchase-service/Dockerfile
     container_name: avito-purchase-service
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/avito_purchase_db
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5433/avito_purchase_db
       SPRING_DATASOURCE_USERNAME: user
       SPRING_DATASOURCE_PASSWORD: 111111
+      SPRING_APPLICATION_NAME: purchase-service
+      EUREKA_CLIENT_ENABLED: "true"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
     depends_on:
       postgres:
         condition: service_healthy

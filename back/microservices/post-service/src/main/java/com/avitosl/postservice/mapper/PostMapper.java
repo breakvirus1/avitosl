@@ -10,9 +10,15 @@ import org.mapstruct.Named;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = org.mapstruct.ReportingPolicy.IGNORE, unmappedSourcePolicy = org.mapstruct.ReportingPolicy.IGNORE)
 public interface PostMapper {
 
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "isActive", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "photos", ignore = true)
+    @Mapping(target = "comments", ignore = true)
     Post toEntity(PostRequest request);
 
     PostResponse toResponse(Post post);
@@ -21,5 +27,9 @@ public interface PostMapper {
 
     @Mapping(target = "photos", ignore = true)
     @Mapping(target = "comments", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "isActive", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     void updateEntityFromRequest(PostRequest request, @MappingTarget Post post);
 }

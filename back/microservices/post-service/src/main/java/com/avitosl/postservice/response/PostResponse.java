@@ -14,7 +14,8 @@ public class PostResponse {
     private String title;
     private String description;
     private Double price;
-    private Long userId;
+    private String keycloakId;
+    private UserResponse author;
     private Long categoryId;
     private Long subcategoryId;
     private Boolean isActive;

@@ -17,6 +17,9 @@ public interface UserServiceClient {
     @GetMapping("/username/{username}")
     UserResponse getUserByUsername(@PathVariable String username);
 
+    @GetMapping("/keycloak/{keycloakId}")
+    UserResponse getUserByKeycloakId(@PathVariable String keycloakId);
+
     @GetMapping
     java.util.List<UserResponse> getAllUsers();
 

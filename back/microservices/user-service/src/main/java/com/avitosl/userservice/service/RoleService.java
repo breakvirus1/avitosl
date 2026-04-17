@@ -35,4 +35,14 @@ public class RoleService {
         return roleRepository.findByName(name)
                 .orElseThrow(() -> new RuntimeException("Role not found: " + name));
     }
+
+    public void assignRoleToUser(User user, Role role) {
+        if (!user.getRoles().contains(role)) {
+            user.getRoles().add(role);
+        }
+    }
+
+    public void removeRoleFromUser(User user, Role role) {
+        user.getRoles().remove(role);
+    }
 }

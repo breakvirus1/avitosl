@@ -17,6 +17,8 @@ public interface SubcategoryMapper {
     Subcategory toEntity(SubcategoryRequest request);
 
     @Mapping(target = "categoryId", source = "category.id")
+    @Mapping(target = "createdAt", source = "createdAt")
+    @Mapping(target = "updatedAt", source = "updatedAt")
     SubcategoryResponse toResponse(Subcategory subcategory);
 
     List<SubcategoryResponse> toResponseList(List<Subcategory> subcategories);

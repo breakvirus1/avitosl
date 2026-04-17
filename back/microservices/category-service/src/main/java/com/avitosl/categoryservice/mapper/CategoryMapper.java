@@ -10,11 +10,12 @@ import org.mapstruct.Named;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {SubcategoryMapper.class})
 public interface CategoryMapper {
 
     Category toEntity(CategoryRequest request);
 
+    @Mapping(target = "subcategories", source = "subcategories")
     CategoryResponse toResponse(Category category);
 
     List<CategoryResponse> toResponseList(List<Category> categories);

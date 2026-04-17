@@ -12,4 +12,8 @@ FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8081
-ENTRYPOINT ["java", "-jar", "app.jar"]
+RUN echo '#!/bin/sh' > /app/start.sh && \
+    echo 'sleep 10' >> /app/start.sh && \
+    echo 'exec java -jar app.jar' >> /app/start.sh && \
+    chmod +x /app/start.sh
+ENTRYPOINT ["/app/start.sh"]

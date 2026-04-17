@@ -12,6 +12,6 @@ public class CommentRequest {
     @NotNull
     private Long postId;
 
-    @NotNull
-    private Long userId;
+    // keycloakId пользователя из токена (не из тела, но принимаем для совместимости)
+    private String keycloakId;
 }

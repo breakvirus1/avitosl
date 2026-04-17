@@ -33,9 +33,9 @@ const AdminPanel = () => {
   const [postForm, setPostForm] = useState({ title: '', description: '', price: '', categoryId: '', subcategoryId: '' });
   const [editingPostId, setEditingPostId] = useState(null);
 
-  // Comment state
-  const [commentForm, setCommentForm] = useState({ text: '', postId: '' });
-  const [editingCommentId, setEditingCommentId] = useState(null);
+   // Comment state
+   const [commentForm, setCommentForm] = useState({ content: '', postId: '' });
+   const [editingCommentId, setEditingCommentId] = useState(null);
 
   // Fake Data state
   const [fakePostCount, setFakePostCount] = useState(10);
@@ -205,8 +205,11 @@ const AdminPanel = () => {
   const handleCreateComment = async (e) => {
     e.preventDefault();
     try {
-      await apiService.createComment(commentForm);
-      setCommentForm({ text: '', postId: '' });
+      await apiService.createComment({
+        content: commentForm.content,
+        postId: parseInt(commentForm.postId)
+      });
+      setCommentForm({ content: '', postId: '' });
       showMessage('success', 'Комментарий создан');
       const res = await apiService.getComments();
       setComments(res.data);
@@ -215,19 +218,19 @@ const AdminPanel = () => {
     }
   };
 
-  const handleUpdateComment = async (e) => {
-    e.preventDefault();
-    try {
-      await apiService.updateComment(editingCommentId, { text: commentForm.text });
-      setEditingCommentId(null);
-      setCommentForm({ text: '', postId: '' });
-      showMessage('success', 'Комментарий обновлен');
-      const res = await apiService.getComments();
-      setComments(res.data);
-    } catch (_) {
-      showMessage('error', 'Ошибка обновления комментария');
-    }
-  };
+   const handleUpdateComment = async (e) => {
+     e.preventDefault();
+     try {
+       await apiService.updateComment(editingCommentId, { content: commentForm.content });
+       setEditingCommentId(null);
+       setCommentForm({ content: '', postId: '' });
+       showMessage('success', 'Комментарий обновлен');
+       const res = await apiService.getComments();
+       setComments(res.data);
+     } catch (_) {
+       showMessage('error', 'Ошибка обновления комментария');
+     }
+   };
 
   const handleDeleteComment = async (id) => {
     if (!window.confirm('Удалить комментарий?')) return;
@@ -244,8 +247,8 @@ const AdminPanel = () => {
   const handleEditComment = (comment) => {
     setEditingCommentId(comment.id);
     setCommentForm({
-      text: comment.text || comment.content,
-      postId: comment.postId
+      content: comment.content || '',
+      postId: comment.postId || ''
     });
   };
 
@@ -525,29 +528,29 @@ const AdminPanel = () => {
           </div>
         )}
 
-        {activeTab === 'comments' && (
-          <div className="admin-section">
-            <h2>Управление комментариями</h2>
-            <form onSubmit={editingCommentId ? handleUpdateComment : handleCreateComment} className="admin-form">
-              <textarea
-                placeholder="Содержание"
-                value={commentForm.text}
-                onChange={(e) => setCommentForm({ ...commentForm, text: e.target.value })}
-                required
-              />
-              <input
-                type="number"
-                placeholder="ID объявления"
-                value={commentForm.postId}
-                onChange={(e) => setCommentForm({ ...commentForm, postId: e.target.value })}
-                required
-              />
-              <button type="submit">{editingCommentId ? 'Обновить' : 'Создать'}</button>
-              {editingCommentId && (
-                <button type="button" onClick={() => { setEditingCommentId(null); setCommentForm({ text: '', postId: '' }); }}>
-                  Отмена
-                </button>
-              )}
+         {activeTab === 'comments' && (
+           <div className="admin-section">
+             <h2>Управление комментариями</h2>
+             <form onSubmit={editingCommentId ? handleUpdateComment : handleCreateComment} className="admin-form">
+               <textarea
+                 placeholder="Содержание"
+                 value={commentForm.content}
+                 onChange={(e) => setCommentForm({ ...commentForm, content: e.target.value })}
+                 required
+               />
+               <input
+                 type="number"
+                 placeholder="ID объявления"
+                 value={commentForm.postId}
+                 onChange={(e) => setCommentForm({ ...commentForm, postId: e.target.value })}
+                 required
+               />
+               <button type="submit">{editingCommentId ? 'Обновить' : 'Создать'}</button>
+                {editingCommentId && (
+                 <button type="button" onClick={() => { setEditingCommentId(null); setCommentForm({ content: '', postId: '' }); }}>
+                   Отмена
+                 </button>
+               )}
             </form>
             <table className="admin-table">
               <thead>
@@ -560,18 +563,18 @@ const AdminPanel = () => {
                 </tr>
               </thead>
               <tbody>
-                {comments.map(comment => (
-                  <tr key={comment.id}>
-                    <td>{comment.id}</td>
-                    <td>{comment.text?.substring(0, 50) || comment.content?.substring(0, 50)}...</td>
-                    <td>{comment.postId}</td>
-                    <td>{comment.author?.id || comment.authorId || 'N/A'}</td>
-                    <td>
-                      <button onClick={() => handleEditComment(comment)}>Редактировать</button>
-                      <button onClick={() => handleDeleteComment(comment.id)}>Удалить</button>
-                    </td>
-                  </tr>
-                ))}
+                 {comments.map(comment => (
+                   <tr key={comment.id}>
+                     <td>{comment.id}</td>
+                      <td>{comment.content?.substring(0, 50)}...</td>
+                     <td>{comment.postId}</td>
+                     <td>{comment.userId || 'N/A'}</td>
+                     <td>
+                       <button onClick={() => handleEditComment(comment)}>Редактировать</button>
+                       <button onClick={() => handleDeleteComment(comment.id)}>Удалить</button>
+                     </td>
+                   </tr>
+                 ))}
               </tbody>
             </table>
           </div>

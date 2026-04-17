@@ -45,6 +45,10 @@ public class SubcategoryService {
         return subcategoryRepository.findByCategoryId(categoryId);
     }
 
+    public List<Subcategory> getAllSubcategories() {
+        return subcategoryRepository.findAll();
+    }
+
     public Subcategory updateSubcategory(Long id, Subcategory subcategoryDetails) {
         Subcategory subcategory = getSubcategoryById(id);
 

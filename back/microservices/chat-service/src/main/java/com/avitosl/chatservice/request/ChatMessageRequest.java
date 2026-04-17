@@ -6,11 +6,8 @@ import lombok.Data;
 
 @Data
 public class ChatMessageRequest {
-    @NotNull
-    private Long senderId;
-
-    @NotNull
-    private Long receiverId;
+    @NotBlank
+    private String receiverKeycloakId;
 
     @NotBlank
     private String message;

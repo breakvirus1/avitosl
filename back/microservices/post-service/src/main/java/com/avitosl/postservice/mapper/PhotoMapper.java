@@ -13,11 +13,17 @@ import java.util.List;
 public interface PhotoMapper {
 
     @Mapping(target = "post", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
     Photo toEntity(PhotoRequest request);
 
+    @Mapping(target = "postId", source = "post.id")
     PhotoResponse toResponse(Photo photo);
 
     List<PhotoResponse> toResponseList(List<Photo> photos);
 
+    @Mapping(target = "post", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
     void updateEntityFromRequest(PhotoRequest request, @MappingTarget Photo photo);
 }

@@ -5,17 +5,29 @@ spring:
     gateway:
       routes:
         - id: user-service
-          uri: http://user-service:8081
+          uri: "lb://user-service"
           predicates:
             - Path=/api/users/**
         - id: category-service
           uri: http://category-service:8082
           predicates:
             - Path=/api/categories/**
+        - id: subcategory-service
+          uri: http://category-service:8082
+          predicates:
+            - Path=/api/subcategories/**
         - id: post-service
-          uri: http://post-service:8083
+          uri: lb://post-service
           predicates:
             - Path=/api/posts/**
+        - id: comments-service
+          uri: lb://post-service
+          predicates:
+            - Path=/api/comments/**
+        - id: photos-service
+          uri: lb://post-service
+          predicates:
+            - Path=/api/photos/**
         - id: chat-service
           uri: http://chat-service:8084
           predicates:
@@ -24,9 +36,46 @@ spring:
           uri: http://purchase-service:8085
           predicates:
             - Path=/api/purchases/**
+        - id: fake-data-service
+          uri: lb://post-service
+          predicates:
+            - Path=/api/fake-data/**
         - id: eureka-server
           uri: http://eureka-server:8761
           predicates:
             - Path=/eureka/**
 
+server:
+  port: 8080
 
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://eureka-server:8761/eureka/
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.avitosl.apigateway: DEBUG
+
+springdoc:
+  swagger-ui:
+    urls:
+      - name: User Service
+        url: /user-service/v3/api-docs
+      - name: Category Service
+        url: /category-service/v3/api-docs
+      - name: Post Service
+        url: /post-service/v3/api-docs
+      - name: Chat Service
+        url: /chat-service/v3/api-docs
+      - name: Purchase Service
+        url: /purchase-service/v3/api-docs

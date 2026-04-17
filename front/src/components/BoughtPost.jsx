@@ -67,7 +67,7 @@ function BoughtPost() {
   };
 
   const getPhotoUrl = (photoId) => {
-    return `http://localhost:8081/api/photos/${photoId}/file`;
+    return `/api/photos/${photoId}/file`;
   };
 
   const handleNextImage = (e) => {

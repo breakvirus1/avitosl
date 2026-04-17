@@ -1,16 +1,19 @@
 package com.avitosl.postservice.controller;
 
 import com.avitosl.postservice.entity.Comment;
+import com.avitosl.postservice.entity.Post;
+import com.avitosl.postservice.feign.UserServiceClient;
 import com.avitosl.postservice.request.CommentRequest;
 import com.avitosl.postservice.response.CommentResponse;
+import com.avitosl.postservice.response.UserResponse;
 import com.avitosl.postservice.service.CommentService;
+import com.avitosl.postservice.util.JwtUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/comments")
@@ -18,11 +21,25 @@ import java.util.stream.Collectors;
 public class CommentController {
 
     private final CommentService commentService;
+    private final UserServiceClient userServiceClient;
+    private final JwtUtil jwtUtil;
 
     @PostMapping
-    public ResponseEntity<CommentResponse> createComment(@Valid @RequestBody CommentRequest request) {
+    public ResponseEntity<CommentResponse> createComment(@RequestHeader(value = "Authorization", required = false) String token,
+                                                          @Valid @RequestBody CommentRequest request) {
+        String keycloakId = extractKeycloakId(token);
+        if (keycloakId == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        Long userId = getUserIdByKeycloakId(keycloakId);
+
+        // Создаем ссылку на пост по ID
+        Post postRef = new Post();
+        postRef.setId(request.getPostId());
+
         Comment comment = commentService.createComment(
-                new Comment(null, request.getContent(), null, request.getUserId(), null, null)
+                new Comment(null, request.getContent(), postRef, userId, null, null)
         );
         return ResponseEntity.ok(mapToResponse(comment));
     }
@@ -35,26 +52,43 @@ public class CommentController {
 
     @GetMapping("/post/{postId}")
     public ResponseEntity<List<CommentResponse>> getCommentsByPostId(@PathVariable Long postId) {
-        List<Comment> comments = commentService.getCommentsByPostId(postId);
-        List<CommentResponse> responses = comments.stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(responses);
+        return ResponseEntity.ok(
+                commentService.getCommentsByPostId(postId).stream()
+                        .map(this::mapToResponse)
+                        .toList()
+        );
     }
 
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<CommentResponse>> getCommentsByUserId(@PathVariable Long userId) {
-        List<Comment> comments = commentService.getCommentsByUserId(userId);
-        List<CommentResponse> responses = comments.stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(responses);
+        return ResponseEntity.ok(
+                commentService.getCommentsByUserId(userId).stream()
+                        .map(this::mapToResponse)
+                        .toList()
+        );
+    }
+
+    @GetMapping
+    public ResponseEntity<List<CommentResponse>> getAllComments() {
+        return ResponseEntity.ok(
+                commentService.getAllComments().stream()
+                        .map(this::mapToResponse)
+                        .toList()
+        );
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<CommentResponse> updateComment(@PathVariable Long id,
-                                                         @Valid @RequestBody CommentRequest request) {
-        Comment commentDetails = new Comment(null, request.getContent(), null, request.getUserId(), null, null);
+                                                          @RequestHeader(value = "Authorization", required = false) String token,
+                                                          @Valid @RequestBody CommentRequest request) {
+        String keycloakId = extractKeycloakId(token);
+        if (keycloakId == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        Long userId = getUserIdByKeycloakId(keycloakId);
+        // При обновлении меняем только content
+        Comment commentDetails = new Comment(null, request.getContent(), null, userId, null, null);
         Comment updatedComment = commentService.updateComment(id, commentDetails);
         return ResponseEntity.ok(mapToResponse(updatedComment));
     }
@@ -65,14 +99,50 @@ public class CommentController {
         return ResponseEntity.noContent().build();
     }
 
+    private String extractKeycloakId(String token) {
+        if (token == null || token.isBlank()) {
+            return null;
+        }
+        try {
+            return jwtUtil.getUserKeycloakIdFromToken(token);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private Long getUserIdByKeycloakId(String keycloakId) {
+        try {
+            var user = userServiceClient.getUserByKeycloakId(keycloakId);
+            return user.getId();
+        } catch (Exception e) {
+            throw new RuntimeException("User not found for keycloakId: " + keycloakId, e);
+        }
+    }
+
     private CommentResponse mapToResponse(Comment comment) {
-        return new CommentResponse(
-                comment.getId(),
-                comment.getContent(),
-                comment.getPost() != null ? comment.getPost().getId() : null,
-                comment.getUserId(),
-                comment.getCreatedAt(),
-                comment.getUpdatedAt()
-        );
+        CommentResponse response = new CommentResponse();
+        response.setId(comment.getId());
+        response.setContent(comment.getContent());
+        response.setPostId(comment.getPost() != null ? comment.getPost().getId() : null);
+        response.setUserId(comment.getUserId());
+        response.setCreatedAt(comment.getCreatedAt());
+        response.setUpdatedAt(comment.getUpdatedAt());
+        
+        // Fetch user details to include author name
+        if (comment.getUserId() != null) {
+            try {
+                var user = userServiceClient.getUserById(comment.getUserId());
+                response.setAuthorFirstName(user.getFirstName());
+                response.setAuthorLastName(user.getLastName());
+            } catch (Exception e) {
+                response.setAuthorFirstName("Пользователь");
+                response.setAuthorLastName("");
+            }
+        } else {
+            response.setAuthorFirstName("Пользователь");
+            response.setAuthorLastName("");
+        }
+        
+        return response;
     }
 }

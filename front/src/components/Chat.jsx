@@ -3,55 +3,43 @@ import { useAuth } from '../hooks/useAuth';
 import './Chat.css';
 
 function Chat({ receiverId, receiverName, postId, onClose }) {
-  const { apiService, fetchUnreadCount } = useAuth();
+  const { apiService, fetchUnreadCount, user } = useAuth();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState(null);
   const messagesEndRef = useRef(null);
-  const [currentUserId, setCurrentUserId] = useState(null);
   const pollingRef = useRef(null);
 
-  useEffect(() => {
-    fetchCurrentUser();
-  }, []);
+  // Используем keycloakId из user (уже есть в контексте)
+  const currentUserKeycloakId = user?.sub;
 
   useEffect(() => {
-    if (receiverId && currentUserId) {
+    scrollToBottom();
+  }, [messages]);
+
+  // Запускаем загрузку и polling при наличии receiverId и currentUserKeycloakId
+  useEffect(() => {
+    if (receiverId && currentUserKeycloakId) {
       fetchMessages();
-      
-      // Запускаем polling для получения новых сообщений каждые 2 секунды
+
       pollingRef.current = setInterval(() => {
         fetchMessages(true);
       }, 2000);
-      
+
       return () => {
         if (pollingRef.current) {
           clearInterval(pollingRef.current);
         }
       };
     }
-  }, [receiverId, currentUserId]);
-
-  const fetchCurrentUser = async () => {
-    try {
-      const response = await apiService.getCurrentUser();
-      setCurrentUserId(response.data.id);
-    } catch (err) {
-      console.error('Error fetching current user:', err);
-      setError('Не удалось загрузить данные пользователя');
-    }
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+  }, [receiverId, currentUserKeycloakId]);
 
   const fetchMessages = async (isPolling = false) => {
     try {
-      const response = await apiService.getConversation(receiverId, 0, 50);
-      const fetchedMessages = response.data.content || [];
+      const response = await apiService.getConversation(currentUserKeycloakId, receiverId);
+      const fetchedMessages = response.data || [];
       
       if (isPolling && messages.length > 0) {
         // Проверяем, есть ли новые сообщения
@@ -69,10 +57,12 @@ function Chat({ receiverId, receiverName, postId, onClose }) {
       }
       
       // Отмечаем все сообщения от этого отправителя как прочитанные
-      if (currentUserId && receiverId && fetchedMessages.length > 0) {
+      if (currentUserKeycloakId && receiverId && fetchedMessages.length > 0) {
         try {
-          await apiService.markAllAsRead(receiverId);
-          // Обновляем счетчик уведомлений
+          const unreadMessages = fetchedMessages.filter(msg => !msg.isRead && msg.senderKeycloakId === receiverId);
+          for (const msg of unreadMessages) {
+            await apiService.markAsRead(msg.id);
+          }
           if (fetchUnreadCount) {
             await fetchUnreadCount();
           }
@@ -102,8 +92,7 @@ function Chat({ receiverId, receiverName, postId, onClose }) {
     try {
       setSending(true);
       const messageData = {
-        receiverId: receiverId,
-        postId: postId || null,
+        receiverKeycloakId: receiverId,
         message: newMessage.trim()
       };
 
@@ -150,7 +139,7 @@ function Chat({ receiverId, receiverName, postId, onClose }) {
   };
 
   const isMyMessage = (message) => {
-    return message.senderId === currentUserId;
+    return message.senderKeycloakId === currentUserKeycloakId;
   };
 
   return (

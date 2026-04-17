@@ -18,11 +18,11 @@ public class ChatMessage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "sender_id", nullable = false)
-    private Long senderId;
+    @Column(name = "sender_keycloak_id", nullable = false)
+    private String senderKeycloakId;
 
-    @Column(name = "receiver_id", nullable = false)
-    private Long receiverId;
+    @Column(name = "receiver_keycloak_id", nullable = false)
+    private String receiverKeycloakId;
 
     @Column(columnDefinition = "TEXT")
     private String message;

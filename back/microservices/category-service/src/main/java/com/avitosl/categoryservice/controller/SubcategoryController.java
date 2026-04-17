@@ -35,14 +35,23 @@ public class SubcategoryController {
         return ResponseEntity.ok(mapToResponse(subcategory));
     }
 
-    @GetMapping("/category/{categoryId}")
-    public ResponseEntity<List<SubcategoryResponse>> getSubcategoriesByCategoryId(@PathVariable Long categoryId) {
-        List<Subcategory> subcategories = subcategoryService.getSubcategoriesByCategoryId(categoryId);
-        List<SubcategoryResponse> responses = subcategories.stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(responses);
-    }
+     @GetMapping("/category/{categoryId}")
+     public ResponseEntity<List<SubcategoryResponse>> getSubcategoriesByCategoryId(@PathVariable Long categoryId) {
+         List<Subcategory> subcategories = subcategoryService.getSubcategoriesByCategoryId(categoryId);
+         List<SubcategoryResponse> responses = subcategories.stream()
+                 .map(this::mapToResponse)
+                 .collect(Collectors.toList());
+         return ResponseEntity.ok(responses);
+     }
+
+     @GetMapping
+     public ResponseEntity<List<SubcategoryResponse>> getAllSubcategories() {
+         List<Subcategory> subcategories = subcategoryService.getAllSubcategories();
+         List<SubcategoryResponse> responses = subcategories.stream()
+                 .map(this::mapToResponse)
+                 .collect(Collectors.toList());
+         return ResponseEntity.ok(responses);
+     }
 
     @PutMapping("/{id}")
     public ResponseEntity<SubcategoryResponse> updateSubcategory(@PathVariable Long id,

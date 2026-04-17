@@ -1,4 +1,57 @@
+# Server configuration
+server:
+  port: 8085
+
+# Application info
 spring:
+  application:
+    name: purchase-service
+  flyway:
+    enabled: false
   cloud:
     compatibility-verifier:
       enabled: false
+  datasource:
+    url: jdbc:postgresql://localhost:5434/avito_purchase_db
+    username: user
+    password: 111111
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+# Eureka client configuration
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+# Feign configuration
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
+        loggerLevel: FULL
+
+# Logging
+logging:
+  level:
+    com.avitosl.purchaseservice: DEBUG
+    feign: DEBUG
+
+# OpenAPI/Swagger
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true

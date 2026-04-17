@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8081/api';
+const API_BASE_URL = '/api';
 
 class AuthApiService {
   constructor(getAccessToken) {
@@ -150,6 +150,10 @@ class AuthApiService {
     return this.client.get(`/users/${id}`);
   }
 
+  getUserByKeycloakId(keycloakId) {
+    return this.client.get(`/users/keycloak/${keycloakId}`);
+  }
+
   updateUser(id, userData) {
     return this.client.put(`/users/${id}`, userData);
   }
@@ -185,37 +189,37 @@ class AuthApiService {
   }
 
   getPhotoUrl(photoId) {
-   return `/api/photos/${photoId}/file`;
- }
+    return `/api/photos/${photoId}/file`;
+  }
 
- deletePhoto(photoId) {
-   return this.client.delete(`/photos/${photoId}`);
- }
+  deletePhoto(photoId) {
+    return this.client.delete(`/photos/${photoId}`);
+  }
 
- // Chat methods
- sendMessage(messageData) {
-   return this.client.post('/chat/messages', messageData);
- }
+  // Chat methods
+  sendMessage(messageData) {
+    return this.client.post('/chat/messages', messageData);
+  }
 
- getConversation(userId, page = 0, size = 50) {
-   return this.client.get(`/chat/conversation/${userId}`, { params: { page, size } });
- }
+  getConversation(userKeycloakId1, userKeycloakId2) {
+    return this.client.get(`/chat/conversation/${userKeycloakId1}/${userKeycloakId2}`);
+  }
 
- getUnreadCount() {
-   return this.client.get('/chat/unread/count');
- }
+  getUnreadCount() {
+    return this.client.get('/chat/unread/count');
+  }
 
- getUnreadMessages() {
-   return this.client.get('/chat/unread/messages');
- }
+  getUnreadMessages() {
+    return this.client.get('/chat/unread/messages');
+  }
 
- markAsRead(messageId) {
-   return this.client.post(`/chat/messages/${messageId}/read`);
- }
+  markAsRead(messageId) {
+    return this.client.post(`/chat/${messageId}/read`);
+  }
 
- markAllAsRead(senderId) {
-   return this.client.post(`/chat/messages/read-all/${senderId}`);
- }
+  markAllAsRead(senderId) {
+    return this.client.post(`/chat/messages/read-all/${senderId}`);
+  }
 
   // Purchase methods
   getUserPurchases(page = 0, size = 20) {

@@ -17,7 +17,7 @@ public class PostRequest {
     private Double price;
 
     @NotNull
-    private Long userId;
+    private String keycloakId;
 
     private Long categoryId;
 

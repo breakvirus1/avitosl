@@ -8,8 +8,9 @@ import java.util.List;
 
 @Repository
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
-    List<ChatMessage> findBySenderId(Long senderId);
-    List<ChatMessage> findByReceiverId(Long receiverId);
-    List<ChatMessage> findBySenderIdAndReceiverId(Long senderId, Long receiverId);
-    List<ChatMessage> findByIsReadFalse();
+    List<ChatMessage> findBySenderKeycloakId(String senderKeycloakId);
+    List<ChatMessage> findByReceiverKeycloakId(String receiverKeycloakId);
+    List<ChatMessage> findBySenderKeycloakIdAndReceiverKeycloakId(String senderKeycloakId, String receiverKeycloakId);
+    List<ChatMessage> findByReceiverKeycloakIdAndIsReadFalse(String receiverKeycloakId);
+    long countByReceiverKeycloakIdAndIsReadFalse(String receiverKeycloakId);
 }

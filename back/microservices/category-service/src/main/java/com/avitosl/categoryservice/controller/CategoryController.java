@@ -1,8 +1,10 @@
 package com.avitosl.categoryservice.controller;
 
 import com.avitosl.categoryservice.entity.Category;
+import com.avitosl.categoryservice.entity.Subcategory;
 import com.avitosl.categoryservice.request.CategoryRequest;
 import com.avitosl.categoryservice.response.CategoryResponse;
+import com.avitosl.categoryservice.response.SubcategoryResponse;
 import com.avitosl.categoryservice.service.CategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +24,7 @@ public class CategoryController {
     @PostMapping
     public ResponseEntity<CategoryResponse> createCategory(@Valid @RequestBody CategoryRequest request) {
         Category category = categoryService.createCategory(
-                new Category(null, request.getName(), request.getDescription(), null, null, null)
+                new Category(null, request.getName(), request.getDescription(), new java.util.HashSet<>(), null, null)
         );
         return ResponseEntity.ok(mapToResponse(category));
     }
@@ -50,8 +52,8 @@ public class CategoryController {
 
     @PutMapping("/{id}")
     public ResponseEntity<CategoryResponse> updateCategory(@PathVariable Long id,
-                                                           @Valid @RequestBody CategoryRequest request) {
-        Category categoryDetails = new Category(null, request.getName(), request.getDescription(), null, null, null);
+                                                          @Valid @RequestBody CategoryRequest request) {
+        Category categoryDetails = new Category(null, request.getName(), request.getDescription(), new java.util.HashSet<>(), null, null);
         Category updatedCategory = categoryService.updateCategory(id, categoryDetails);
         return ResponseEntity.ok(mapToResponse(updatedCategory));
     }
@@ -63,12 +65,27 @@ public class CategoryController {
     }
 
     private CategoryResponse mapToResponse(Category category) {
+        List<SubcategoryResponse> subcategoryResponses = category.getSubcategories().stream()
+                .map(this::mapSubcategoryToResponse)
+                .collect(Collectors.toList());
         return new CategoryResponse(
                 category.getId(),
                 category.getName(),
                 category.getDescription(),
+                subcategoryResponses,
                 category.getCreatedAt(),
                 category.getUpdatedAt()
+        );
+    }
+
+    private SubcategoryResponse mapSubcategoryToResponse(Subcategory subcategory) {
+        return new SubcategoryResponse(
+                subcategory.getId(),
+                subcategory.getName(),
+                subcategory.getDescription(),
+                subcategory.getCategory().getId(),
+                subcategory.getCreatedAt(),
+                subcategory.getUpdatedAt()
         );
     }
 }

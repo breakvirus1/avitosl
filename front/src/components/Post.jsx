@@ -1,8 +1,7 @@
 import { useAuth } from "react-oidc-context";
 import { useEffect, useState } from "react";
 import axios from 'axios';
-
-const API_BASE_URL = 'http://localhost:1291/api';
+import { API_BASE_URL } from '../config';
 
 const Posts = () => {
   const auth = useAuth();

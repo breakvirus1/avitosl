@@ -16,7 +16,6 @@ import java.util.List;
 public class CommentService {
 
     private final CommentRepository commentRepository;
-    private final CommentMapper commentMapper;
 
     public Comment createComment(Comment comment) {
         return commentRepository.save(comment);
@@ -35,12 +34,13 @@ public class CommentService {
         return commentRepository.findByUserId(userId);
     }
 
+    public List<Comment> getAllComments() {
+        return commentRepository.findAll();
+    }
+
     public Comment updateComment(Long id, Comment commentDetails) {
         Comment comment = getCommentById(id);
-
-        commentMapper.updateEntityFromRequest(null, comment);
         comment.setContent(commentDetails.getContent());
-
         return commentRepository.save(comment);
     }
 

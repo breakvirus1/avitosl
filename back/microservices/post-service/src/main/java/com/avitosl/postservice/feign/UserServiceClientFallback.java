@@ -21,11 +21,22 @@ public class UserServiceClientFallback implements UserServiceClient {
 
     @Override
     public List<UserResponse> getAllUsers() {
-        throw new RuntimeException("User service is unavailable. Cannot fetch all users");
+        // Return a default user when service is unavailable
+        UserResponse defaultUser = new UserResponse();
+        defaultUser.setId(1L);
+        defaultUser.setUsername("default");
+        defaultUser.setEmail("default@example.com");
+        defaultUser.setKeycloakId("default-keycloak-id");
+        return List.of(defaultUser);
     }
 
     @Override
     public List<UserResponse> searchUsers(String query) {
         throw new RuntimeException("User service is unavailable. Cannot search users with query: " + query);
+    }
+
+    @Override
+    public UserResponse getUserByKeycloakId(String keycloakId) {
+        throw new RuntimeException("User service is unavailable. Cannot fetch user with keycloakId: " + keycloakId);
     }
 }

@@ -1,14 +1,24 @@
 import { UserManager } from 'oidc-client-ts';
 
+const isDev = window.location.port === '5173';
+
 const settings = {
-  authority: 'http://localhost:14082/realms/avitorealm',
+  authority: isDev
+    ? 'http://localhost:14082/realms/avitorealm'
+    : `${window.location.origin}/auth/`,
   client_id: 'avitofrontend',
-  redirect_uri: 'http://localhost:5173/callback',
-  post_logout_redirect_uri: 'http://localhost:5173/',
+  redirect_uri: isDev
+    ? 'http://localhost:5173/callback'
+    : `${window.location.origin}/callback`,
+  post_logout_redirect_uri: isDev
+    ? 'http://localhost:5173/'
+    : `${window.location.origin}/`,
   response_type: 'code',
   scope: 'openid profile email',
   automaticSilentRenew: true,
-  silent_redirect_uri: 'http://localhost:5173/silent-renew.html',
+  silent_redirect_uri: isDev
+    ? 'http://localhost:5173/silent-renew.html'
+    : `${window.location.origin}/silent-renew.html`,
 };
 
 export const userManager = new UserManager(settings);
@@ -34,7 +44,6 @@ export const logout = async () => {
 export const completeLogin = async () => {
   try {
     const user = await userManager.signinRedirectCallback();
-    // Очищаем URL от кода авторизации после успешной обработки
     if (window.history && window.history.replaceState) {
       window.history.replaceState({}, document.title, window.location.pathname);
     }

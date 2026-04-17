@@ -366,7 +366,7 @@ function EditPostPage() {
               {photos.map((photo) => (
                 <div key={photo.id} className="photo-item">
                   <img
-                    src={`http://localhost:8081/api/photos/${photo.id}/file`}
+                    src={`/api/photos/${photo.id}/file`}
                     alt="Фото"
                     className="photo-preview"
                   />

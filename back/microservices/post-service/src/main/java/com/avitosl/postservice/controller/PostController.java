@@ -1,8 +1,10 @@
 package com.avitosl.postservice.controller;
 
 import com.avitosl.postservice.entity.Post;
+import com.avitosl.postservice.feign.UserServiceClient;
 import com.avitosl.postservice.request.PostRequest;
 import com.avitosl.postservice.response.PostResponse;
+import com.avitosl.postservice.response.UserResponse;
 import com.avitosl.postservice.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,14 +23,19 @@ import java.util.stream.Collectors;
 public class PostController {
 
     private final PostService postService;
+    private final UserServiceClient userServiceClient;
 
     @PostMapping
     public ResponseEntity<PostResponse> createPost(@Valid @RequestBody PostRequest request) {
-        Post post = postService.createPost(
-                new Post(null, request.getTitle(), request.getDescription(), request.getPrice(),
-                        request.getUserId(), request.getCategoryId(), request.getSubcategoryId(),
-                        true, null, null, null, null)
-        );
+        Post post = new Post();
+        post.setTitle(request.getTitle());
+        post.setDescription(request.getDescription());
+        post.setPrice(request.getPrice());
+        post.setKeycloakId(request.getKeycloakId());
+        post.setCategoryId(request.getCategoryId());
+        post.setSubcategoryId(request.getSubcategoryId());
+        post.setIsActive(true);
+        post = postService.createPost(post);
         return ResponseEntity.ok(mapToResponse(post));
     }
 
@@ -38,9 +45,9 @@ public class PostController {
         return ResponseEntity.ok(mapToResponse(post));
     }
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<PostResponse>> getPostsByUserId(@PathVariable Long userId) {
-        List<Post> posts = postService.getPostsByUserId(userId);
+    @GetMapping("/user/{keycloakId}")
+    public ResponseEntity<List<PostResponse>> getPostsByKeycloakId(@PathVariable String keycloakId) {
+        List<Post> posts = postService.getPostsByKeycloakId(keycloakId);
         List<PostResponse> responses = posts.stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
@@ -86,9 +93,14 @@ public class PostController {
     @PutMapping("/{id}")
     public ResponseEntity<PostResponse> updatePost(@PathVariable Long id,
                                                     @Valid @RequestBody PostRequest request) {
-        Post postDetails = new Post(null, request.getTitle(), request.getDescription(), request.getPrice(),
-                request.getUserId(), request.getCategoryId(), request.getSubcategoryId(),
-                true, null, null, null, null);
+        Post postDetails = new Post();
+        postDetails.setTitle(request.getTitle());
+        postDetails.setDescription(request.getDescription());
+        postDetails.setPrice(request.getPrice());
+        postDetails.setKeycloakId(request.getKeycloakId());
+        postDetails.setCategoryId(request.getCategoryId());
+        postDetails.setSubcategoryId(request.getSubcategoryId());
+        postDetails.setIsActive(true);
         Post updatedPost = postService.updatePost(id, postDetails);
         return ResponseEntity.ok(mapToResponse(updatedPost));
     }
@@ -112,12 +124,19 @@ public class PostController {
     }
 
     private PostResponse mapToResponse(Post post) {
+        UserResponse author = null;
+        try {
+            author = userServiceClient.getUserByKeycloakId(post.getKeycloakId());
+        } catch (Exception e) {
+            // Если не удалось получить пользователя, оставляем null
+        }
         return new PostResponse(
                 post.getId(),
                 post.getTitle(),
                 post.getDescription(),
                 post.getPrice(),
-                post.getUserId(),
+                post.getKeycloakId(),
+                author,
                 post.getCategoryId(),
                 post.getSubcategoryId(),
                 post.getIsActive(),

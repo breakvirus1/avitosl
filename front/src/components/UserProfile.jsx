@@ -4,8 +4,6 @@ import { useAuth } from '../hooks/useAuth';
 import AuthBar from './AuthBar';
 import './UserProfile.css';
 
-const API_BASE_URL = 'http://localhost:8081/api';
-
 function UserProfile() {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout, apiService } = useAuth();

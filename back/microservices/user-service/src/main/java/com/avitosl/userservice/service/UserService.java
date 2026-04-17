@@ -39,6 +39,11 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("User not found with username: " + username));
     }
 
+    public User getUserByKeycloakId(String keycloakId) {
+        return userRepository.findByKeycloakId(keycloakId)
+                .orElseThrow(() -> new NotFoundException("User not found with keycloakId: " + keycloakId));
+    }
+
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }

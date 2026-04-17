@@ -30,6 +30,8 @@ public class SecurityConfig {
                 .and()
                 .authorizeHttpRequests()
                     .requestMatchers("/api/auth/**").permitAll()
+                    .requestMatchers("/api/users").permitAll()
+                    .requestMatchers("/api/users/keycloak/**").permitAll()
                     .requestMatchers("/actuator/**").permitAll()
                     .requestMatchers("/v3/api-docs/**").permitAll()
                     .requestMatchers("/swagger-ui/**").permitAll()
