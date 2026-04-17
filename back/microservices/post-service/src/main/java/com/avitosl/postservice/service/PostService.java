@@ -86,13 +86,25 @@ public class PostService {
     public Post updatePost(Long id, Post postDetails) {
         Post post = getPostById(id);
 
-        postMapper.updateEntityFromRequest(null, post);
-        post.setTitle(postDetails.getTitle());
-        post.setDescription(postDetails.getDescription());
-        post.setPrice(postDetails.getPrice());
-        post.setCategoryId(postDetails.getCategoryId());
-        post.setSubcategoryId(postDetails.getSubcategoryId());
-        post.setIsActive(postDetails.getIsActive());
+        if (postDetails.getTitle() != null) {
+            post.setTitle(postDetails.getTitle());
+        }
+        if (postDetails.getDescription() != null) {
+            post.setDescription(postDetails.getDescription());
+        }
+        if (postDetails.getPrice() != null) {
+            post.setPrice(postDetails.getPrice());
+        }
+        if (postDetails.getCategoryId() != null) {
+            post.setCategoryId(postDetails.getCategoryId());
+        }
+        if (postDetails.getSubcategoryId() != null) {
+            post.setSubcategoryId(postDetails.getSubcategoryId());
+        }
+        if (postDetails.getIsActive() != null) {
+            post.setIsActive(postDetails.getIsActive());
+        }
+        // keycloakId не обновляется
 
         return postRepository.save(post);
     }

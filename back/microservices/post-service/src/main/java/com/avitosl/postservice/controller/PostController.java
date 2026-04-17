@@ -3,6 +3,7 @@ package com.avitosl.postservice.controller;
 import com.avitosl.postservice.entity.Post;
 import com.avitosl.postservice.feign.UserServiceClient;
 import com.avitosl.postservice.request.PostRequest;
+import com.avitosl.postservice.request.PostUpdateRequest;
 import com.avitosl.postservice.response.PostResponse;
 import com.avitosl.postservice.response.UserResponse;
 import com.avitosl.postservice.service.PostService;
@@ -92,15 +93,24 @@ public class PostController {
 
     @PutMapping("/{id}")
     public ResponseEntity<PostResponse> updatePost(@PathVariable Long id,
-                                                    @Valid @RequestBody PostRequest request) {
+                                                    @RequestBody PostUpdateRequest request) {
+        // Manual validation
+        if (request.getTitle() != null && request.getTitle().trim().isEmpty()) {
+            throw new IllegalArgumentException("Title cannot be empty");
+        }
+        if (request.getPrice() != null && request.getPrice() <= 0) {
+            throw new IllegalArgumentException("Price must be positive");
+        }
+
         Post postDetails = new Post();
-        postDetails.setTitle(request.getTitle());
-        postDetails.setDescription(request.getDescription());
-        postDetails.setPrice(request.getPrice());
-        postDetails.setKeycloakId(request.getKeycloakId());
-        postDetails.setCategoryId(request.getCategoryId());
-        postDetails.setSubcategoryId(request.getSubcategoryId());
-        postDetails.setIsActive(true);
+        if (request.getTitle() != null) postDetails.setTitle(request.getTitle());
+        if (request.getDescription() != null) postDetails.setDescription(request.getDescription());
+        if (request.getPrice() != null) postDetails.setPrice(request.getPrice());
+        if (request.getCategoryId() != null) postDetails.setCategoryId(request.getCategoryId());
+        if (request.getSubcategoryId() != null) postDetails.setSubcategoryId(request.getSubcategoryId());
+        if (request.getIsActive() != null) postDetails.setIsActive(request.getIsActive());
+        // keycloakId не обновляется
+
         Post updatedPost = postService.updatePost(id, postDetails);
         return ResponseEntity.ok(mapToResponse(updatedPost));
     }
@@ -141,7 +151,8 @@ public class PostController {
                 post.getSubcategoryId(),
                 post.getIsActive(),
                 post.getCreatedAt(),
-                post.getUpdatedAt()
+                post.getUpdatedAt(),
+                post.getPhotos()
         );
     }
 }

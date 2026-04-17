@@ -126,6 +126,9 @@ public class FakeDataGeneratorService {
                 comment.setPost(post);
                 comment.setUserId(commentUser.getId());
                 comment.setContent(faker.lorem().sentence());
+                // Set author name from user data
+                comment.setAuthorFirstName(commentUser.getFirstName() != null ? commentUser.getFirstName() : "Пользователь");
+                comment.setAuthorLastName(commentUser.getLastName() != null ? commentUser.getLastName() : "");
                 post.getComments().add(comment);
             }
 

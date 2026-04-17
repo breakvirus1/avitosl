@@ -6,9 +6,14 @@ import com.avitosl.postservice.response.PhotoResponse;
 import com.avitosl.postservice.service.PhotoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,6 +23,30 @@ import java.util.stream.Collectors;
 public class PhotoController {
 
     private final PhotoService photoService;
+
+    @PostMapping("/upload")
+    public ResponseEntity<PhotoResponse> uploadPhoto(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("postId") Long postId,
+            @RequestParam(value = "isPrimary", required = false) Boolean isPrimary) throws IOException {
+
+        Photo photo = photoService.uploadPhoto(file, postId, isPrimary);
+        return ResponseEntity.ok(mapToResponse(photo));
+    }
+
+    @GetMapping("/{id}/file")
+    public ResponseEntity<InputStreamResource> getPhotoFile(@PathVariable Long id) throws IOException {
+        byte[] data = photoService.getPhotoFile(id);
+        Photo photo = photoService.getPhotoById(id);
+
+        InputStreamResource resource = new InputStreamResource(new java.io.ByteArrayInputStream(data));
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + photo.getFileName() + "\"")
+                .contentType(MediaType.parseMediaType(photo.getContentType() != null ? photo.getContentType() : "application/octet-stream"))
+                .contentLength(data.length)
+                .body(resource);
+    }
 
     @PostMapping
     public ResponseEntity<PhotoResponse> createPhoto(@Valid @RequestBody PhotoRequest request) {

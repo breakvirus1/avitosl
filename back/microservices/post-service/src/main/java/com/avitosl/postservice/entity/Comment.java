@@ -1,5 +1,6 @@
 package com.avitosl.postservice.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -31,6 +32,7 @@ public class Comment {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", nullable = false)
     @ToString.Exclude
+    @JsonIgnore
     private Post post;
 
     @Column(name = "user_id", nullable = false)
@@ -41,6 +43,12 @@ public class Comment {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "author_first_name")
+    private String authorFirstName;
+
+    @Column(name = "author_last_name")
+    private String authorLastName;
 
     @PrePersist
     protected void onCreate() {

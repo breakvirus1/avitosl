@@ -5,7 +5,6 @@ import com.avitosl.postservice.entity.Post;
 import com.avitosl.postservice.feign.UserServiceClient;
 import com.avitosl.postservice.request.CommentRequest;
 import com.avitosl.postservice.response.CommentResponse;
-import com.avitosl.postservice.response.UserResponse;
 import com.avitosl.postservice.service.CommentService;
 import com.avitosl.postservice.util.JwtUtil;
 import jakarta.validation.Valid;
@@ -34,14 +33,25 @@ public class CommentController {
 
         Long userId = getUserIdByKeycloakId(keycloakId);
 
-        // Создаем ссылку на пост по ID
+        // Extract author name from token
+        String firstName = jwtUtil.getClaimFromToken(token, "given_name");
+        String lastName = jwtUtil.getClaimFromToken(token, "family_name");
+        if (firstName == null || firstName.isEmpty()) firstName = "Пользователь";
+        if (lastName == null) lastName = "";
+
+        // Создаем комментарий
+        Comment comment = new Comment();
+        comment.setContent(request.getContent());
+        // Создаем ссылку на пост
         Post postRef = new Post();
         postRef.setId(request.getPostId());
+        comment.setPost(postRef);
+        comment.setUserId(userId);
+        comment.setAuthorFirstName(firstName);
+        comment.setAuthorLastName(lastName);
 
-        Comment comment = commentService.createComment(
-                new Comment(null, request.getContent(), postRef, userId, null, null)
-        );
-        return ResponseEntity.ok(mapToResponse(comment));
+        Comment savedComment = commentService.createComment(comment);
+        return ResponseEntity.ok(mapToResponse(savedComment));
     }
 
     @GetMapping("/{id}")
@@ -86,10 +96,12 @@ public class CommentController {
             return ResponseEntity.badRequest().build();
         }
 
-        Long userId = getUserIdByKeycloakId(keycloakId);
-        // При обновлении меняем только content
-        Comment commentDetails = new Comment(null, request.getContent(), null, userId, null, null);
-        Comment updatedComment = commentService.updateComment(id, commentDetails);
+        // Verify ownership and update only content
+        Comment existing = commentService.getCommentById(id);
+        // Optionally check that existing.userId matches the user from token for authorization
+        existing.setContent(request.getContent());
+        // Do not update author fields
+        Comment updatedComment = commentService.updateComment(id, existing);
         return ResponseEntity.ok(mapToResponse(updatedComment));
     }
 
@@ -127,22 +139,17 @@ public class CommentController {
         response.setUserId(comment.getUserId());
         response.setCreatedAt(comment.getCreatedAt());
         response.setUpdatedAt(comment.getUpdatedAt());
-        
-        // Fetch user details to include author name
-        if (comment.getUserId() != null) {
-            try {
-                var user = userServiceClient.getUserById(comment.getUserId());
-                response.setAuthorFirstName(user.getFirstName());
-                response.setAuthorLastName(user.getLastName());
-            } catch (Exception e) {
-                response.setAuthorFirstName("Пользователь");
-                response.setAuthorLastName("");
-            }
+
+        // Use denormalized author names stored in comment
+        if (comment.getAuthorFirstName() != null && !comment.getAuthorFirstName().isEmpty()) {
+            response.setAuthorFirstName(comment.getAuthorFirstName());
+            response.setAuthorLastName(comment.getAuthorLastName());
         } else {
+            // Fallback for legacy comments (should be rare)
             response.setAuthorFirstName("Пользователь");
             response.setAuthorLastName("");
         }
-        
+
         return response;
     }
 }

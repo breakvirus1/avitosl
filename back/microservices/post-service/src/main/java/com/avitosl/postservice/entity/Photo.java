@@ -1,5 +1,6 @@
 package com.avitosl.postservice.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -40,6 +41,7 @@ public class Photo {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", nullable = false)
     @ToString.Exclude
+    @JsonIgnore
     private Post post;
 
     @Column(name = "is_primary")

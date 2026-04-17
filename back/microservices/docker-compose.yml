@@ -121,6 +121,10 @@ services:
       context: ..
       dockerfile: microservices/post-service/Dockerfile
     container_name: avito-post-service
+    ports:
+      - "8083:8083"
+    volumes:
+      - /tmp/avitosl_uploads:/app/uploads
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5433/avito_post_db
       SPRING_DATASOURCE_USERNAME: user
