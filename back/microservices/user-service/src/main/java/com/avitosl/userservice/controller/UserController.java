@@ -6,7 +6,9 @@ import com.avitosl.userservice.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AuthorizationServiceException;
 import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -61,6 +63,30 @@ public class UserController {
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/wallet/add")
+    public ResponseEntity<UserResponse> addFundsToWallet(@PathVariable Long id, @RequestParam Double amount,
+                                                          HttpServletRequest request) {
+        Long currentUserId = (Long) request.getAttribute("userId");
+        boolean internalService = "purchase-service".equals(request.getHeader("X-Internal-Service"));
+        if (currentUserId != null && !id.equals(currentUserId) && !internalService) {
+            throw new AuthorizationServiceException("Cannot modify another user's wallet");
+        }
+        User user = userService.addFundsToWallet(id, amount);
+        return ResponseEntity.ok(mapToResponse(user));
+    }
+
+    @PostMapping("/{id}/wallet/subtract")
+    public ResponseEntity<UserResponse> subtractFromWallet(@PathVariable Long id, @RequestParam Double amount,
+                                                            HttpServletRequest request) {
+        Long currentUserId = (Long) request.getAttribute("userId");
+        boolean internalService = "purchase-service".equals(request.getHeader("X-Internal-Service"));
+        if (currentUserId != null && !id.equals(currentUserId) && !internalService) {
+            throw new AuthorizationServiceException("Cannot modify another user's wallet");
+        }
+        User user = userService.subtractFromWallet(id, amount);
+        return ResponseEntity.ok(mapToResponse(user));
     }
 
     private UserResponse mapToResponse(User user) {

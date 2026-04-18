@@ -35,7 +35,7 @@ public class PostController {
         post.setKeycloakId(request.getKeycloakId());
         post.setCategoryId(request.getCategoryId());
         post.setSubcategoryId(request.getSubcategoryId());
-        post.setIsActive(true);
+        post.setIsActive(request.getIsActive() != null ? request.getIsActive() : true);
         post = postService.createPost(post);
         return ResponseEntity.ok(mapToResponse(post));
     }

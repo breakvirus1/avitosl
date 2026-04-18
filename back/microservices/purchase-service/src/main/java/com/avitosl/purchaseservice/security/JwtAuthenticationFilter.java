@@ -1,10 +1,10 @@
-package com.avitosl.userservice.security;
+package com.avitosl.purchaseservice.security;
 
-import com.avitosl.userservice.entity.User;
-import com.avitosl.userservice.service.AuthService;
-import com.avitosl.userservice.service.UserService;
+import com.avitosl.purchaseservice.feign.UserServiceClient;
+import com.avitosl.purchaseservice.response.UserResponse;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import feign.FeignException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,14 +18,15 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.Base64;
 
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final AuthService authService;
-    private final UserService userService;
+    private final UserServiceClient userServiceClient;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
@@ -35,8 +36,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String path = request.getServletPath();
 
-        // Skip JWT validation for auth endpoints
-        if (path.startsWith("/api/auth/")) {
+        // Skip JWT validation for actuator and swagger endpoints
+        if (path.startsWith("/actuator") || path.startsWith("/v3/api-docs") || path.startsWith("/swagger-ui")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -44,35 +45,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = getJwtFromRequest(request);
 
         if (StringUtils.hasText(token)) {
-            // Try internal JWT first
-            if (authService.validateToken(token)) {
-                String username = authService.getUsernameFromToken(token);
-                Long userId = authService.getUserIdFromToken(token);
-                setAuthentication(request, username, userId);
-            } else {
-                // Try Keycloak token: extract 'sub' without signature verification (dev)
-                try {
-                    String keycloakId = extractSubFromToken(token);
-                    if (keycloakId != null) {
-                        User user = userService.getUserByKeycloakId(keycloakId);
-                        setAuthentication(request, user.getUsername(), user.getId());
+            try {
+                // Extract 'sub' (Keycloak user ID) from token without signature verification (dev only)
+                String keycloakId = extractSubFromToken(token);
+                if (keycloakId != null) {
+                    // Fetch internal user by keycloakId
+                    UserResponse user = userServiceClient.getUserByKeycloakId(keycloakId);
+                    if (user != null && user.getId() != null) {
+                        UsernamePasswordAuthenticationToken authentication =
+                                new UsernamePasswordAuthenticationToken(user.getId(), null, Collections.emptyList());
+                        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                        request.setAttribute("jwtToken", token);
                     }
-                } catch (Exception e) {
-                    // Invalid Keycloak token, continue unauthenticated
                 }
+            } catch (Exception e) {
+                // Log and continue unauthenticated
+                System.err.println("JWT authentication failed: " + e.getMessage());
             }
         }
 
         filterChain.doFilter(request, response);
-    }
-
-    private void setAuthentication(HttpServletRequest request, String username, Long userId) {
-        UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(username, null, null);
-        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        request.setAttribute("userId", userId);
-        request.setAttribute("username", username);
     }
 
     private String getJwtFromRequest(HttpServletRequest request) {
@@ -89,7 +82,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      */
     private String extractSubFromToken(String token) {
         String[] parts = token.split("\\.");
-        if (parts.length < 2) return null;
+        if (parts.length < 2) return null; // not a JWT
         String payload = parts[1];
         // Fix base64 padding
         String padded = payload.replace('-', '+').replace('_', '/');

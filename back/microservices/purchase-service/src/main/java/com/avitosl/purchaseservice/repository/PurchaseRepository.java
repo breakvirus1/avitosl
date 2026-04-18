@@ -1,6 +1,8 @@
 package com.avitosl.purchaseservice.repository;
 
 import com.avitosl.purchaseservice.entity.Purchase;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -12,4 +14,5 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long> {
     List<Purchase> findBySellerId(Long sellerId);
     List<Purchase> findByPostId(Long postId);
     List<Purchase> findByStatus(String status);
+    Page<Purchase> findByBuyerId(Long buyerId, Pageable pageable);
 }

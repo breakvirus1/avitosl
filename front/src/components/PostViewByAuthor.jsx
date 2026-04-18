@@ -3,9 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import Chat from './Chat';
 import './PostView.css';
 
-function PostViewBuyer({ post, user, comments, onCreateComment, onUpdateComment, onDeleteComment, onPurchasePost }) {
+function PostViewByAuthor({ post, user, comments, onCreateComment, onUpdateComment, onDeleteComment, onDeletePost, onEditPost }) {
   const navigate = useNavigate();
-  const isAuthenticated = !!user;
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showChat, setShowChat] = useState(false);
   const [chatReceiverId, setChatReceiverId] = useState(null);
@@ -84,16 +83,6 @@ function PostViewBuyer({ post, user, comments, onCreateComment, onUpdateComment,
 
   const isCommentOwner = (comment) => {
     return comment.userId === user?.id;
-  };
-
-  const isOwner = post.author?.id === user?.id || post.author?.keycloakId === user?.sub;
-
-  const handleOpenChat = () => {
-    if (post?.author?.keycloakId) {
-      setChatReceiverId(post.author.keycloakId);
-      setChatReceiverName(post.author.firstName || 'Продавец');
-      setShowChat(true);
-    }
   };
 
   const handleCloseChat = () => {
@@ -258,22 +247,19 @@ function PostViewBuyer({ post, user, comments, onCreateComment, onUpdateComment,
           </div>
 
           <div className="post-view-actions">
-            {!isOwner && (
-              <button
-                className="post-view-contact-btn"
-                onClick={handleOpenChat}
-              >
-                Написать продавцу
-              </button>
-            )}
-            {!isOwner && post.isActive && (
-                <button
-                  className="post-view-purchase-btn"
-                  onClick={onPurchasePost}
-                >
-                  Купить
-                </button>
-              )}
+            {/* Только кнопки для автора: редактирование и удаление */}
+            <button
+              className="post-view-edit-btn"
+              onClick={onEditPost}
+            >
+              Редактировать
+            </button>
+            <button
+              className="post-view-delete-btn"
+              onClick={onDeletePost}
+            >
+              Удалить
+            </button>
           </div>
 
           <div className="post-view-dates">
@@ -365,27 +351,21 @@ function PostViewBuyer({ post, user, comments, onCreateComment, onUpdateComment,
           <h3>Комментарии ({comments.length})</h3>
         </div>
 
-        {isAuthenticated ? (
-          <form onSubmit={handleCreateComment} className="post-view-comment-form">
-            <textarea
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-              placeholder="Напишите комментарий..."
-              className="post-view-comment-input"
-              rows="3"
-              maxLength="2000"
-            />
-            <div className="post-view-comment-form-actions">
-              <button type="submit" className="post-view-comment-submit">
-                Отправить
-              </button>
-            </div>
-          </form>
-        ) : (
-          <div className="post-view-comments-login-prompt">
-            <p>Чтобы оставить комментарий, необходимо <button onClick={() => navigate('/')} className="post-view-login-link">войти</button> в систему</p>
+        <form onSubmit={handleCreateComment} className="post-view-comment-form">
+          <textarea
+            value={commentText}
+            onChange={(e) => setCommentText(e.target.value)}
+            placeholder="Напишите комментарий..."
+            className="post-view-comment-input"
+            rows="3"
+            maxLength="2000"
+          />
+          <div className="post-view-comment-form-actions">
+            <button type="submit" className="post-view-comment-submit">
+              Отправить
+            </button>
           </div>
-        )}
+        </form>
 
         <div className="post-view-comments-list">
           {comments.map(renderComment)}
@@ -410,5 +390,4 @@ function PostViewBuyer({ post, user, comments, onCreateComment, onUpdateComment,
   );
 }
 
-export default PostViewBuyer;
-
+export default PostViewByAuthor;

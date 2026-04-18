@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import AuthBar from './AuthBar';
 import './PostView.css';
 
 function PostViewPublic() {
@@ -74,7 +73,7 @@ function PostViewPublic() {
     setCurrentImageIndex(index);
   };
 
-  // Автоматическая смена изображений каждые 3 секунды
+  // Automatic image slider every 3 seconds
   useEffect(() => {
     if (!post || !post.photos || post.photos.length <= 1) return;
 
@@ -125,10 +124,8 @@ function PostViewPublic() {
   const photoUrl = currentPhoto ? getPhotoUrl(currentPhoto.id) : null;
 
   return (
-    <div className="post-view-wrapper">
-      <div style={{ maxWidth: '800px', margin: '0 auto', width: '100%' }}>
-        <AuthBar />
-        <div className="post-view-content">
+    <>
+      <div className="post-view-content">
         <div className="post-view-main">
           <div className="post-view-header">
             <h1 className="post-view-title">{post.title}</h1>
@@ -196,7 +193,7 @@ function PostViewPublic() {
               {formatPrice(post.price)}
             </div>
             <div className="post-view-status">
-              {post.active ? (
+              {post.isActive ? (
                 <span className="post-view-status-active">Активно</span>
               ) : (
                 <span className="post-view-status-inactive">Неактивно</span>
@@ -226,14 +223,14 @@ function PostViewPublic() {
             >
               Написать продавцу
             </button>
-            {post.active && (
-              <button
-                className="post-view-purchase-btn"
-                onClick={() => navigate('/')}
-              >
-                Купить
-              </button>
-            )}
+            {post.isActive && (
+                <button
+                  className="post-view-purchase-btn"
+                  onClick={() => navigate('/')}
+                >
+                  Купить
+                </button>
+              )}
           </div>
 
           <div className="post-view-public-notice">
@@ -247,9 +244,8 @@ function PostViewPublic() {
             )}
           </div>
         </div>
-        </div>
       </div>
-    </div>
+    </>
   );
 }
 

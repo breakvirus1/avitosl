@@ -10,4 +10,9 @@ public class PostServiceClientFallback implements PostServiceClient {
     public PostResponse getPostById(Long id) {
         throw new RuntimeException("Post service is unavailable. Cannot fetch post with id: " + id);
     }
+
+    @Override
+    public void deactivatePost(Long id) {
+        throw new RuntimeException("Post service is unavailable. Cannot deactivate post with id: " + id);
+    }
 }

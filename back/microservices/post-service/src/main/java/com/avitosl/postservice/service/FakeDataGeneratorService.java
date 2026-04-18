@@ -23,17 +23,23 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.charset.StandardCharsets;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.Key;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.Base64;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class FakeDataGeneratorService {
 
     private final PostRepository postRepository;
@@ -44,8 +50,16 @@ public class FakeDataGeneratorService {
     private final SubcategoryServiceClient subcategoryServiceClient;
     private final ChatServiceClient chatServiceClient;
 
+    @Value("${file.upload-dir:uploads}")
+    private String uploadDir;
+
     private final Faker faker = new Faker(new Locale("ru"));
     private final Random random = new Random();
+    
+    // A tiny 1x1 black JPEG image (base64) used as default photo content
+    private static final byte[] DEFAULT_IMAGE = Base64.getDecoder().decode(
+        "/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/wAALCAABAAEBAREA/8QAFAABAAAAAAAAAAAAAAAAAAAACf/EABQQAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQEAAD8AVN//2Q=="
+    );
     
     // Retry configuration
     private static final int MAX_RETRIES = 10;
@@ -105,14 +119,29 @@ public class FakeDataGeneratorService {
             post.setCreatedAt(LocalDateTime.now().minusDays(random.nextInt(30)));
             post.setUpdatedAt(LocalDateTime.now());
 
-            // Generate photos
+            // Generate photos with actual image files
             int photoCount = random.nextInt(3) + 1; // 1-3 photos
+            Path uploadPath = Paths.get(uploadDir).toAbsolutePath();
+            try {
+                Files.createDirectories(uploadPath);
+            } catch (IOException e) {
+                System.err.println("Failed to create upload directory: " + e.getMessage());
+            }
             for (int p = 0; p < photoCount; p++) {
                 Photo photo = new Photo();
                 photo.setPost(post);
-                photo.setFileName(faker.file().fileName());
-                photo.setFilePath("/uploads/" + UUID.randomUUID() + ".jpg");
-                photo.setFileSize(faker.number().numberBetween(1024L, 10_000_000L));
+                String fileName = UUID.randomUUID() + ".jpg";
+                Path filePath = uploadPath.resolve(fileName);
+                try {
+                    Files.write(filePath, DEFAULT_IMAGE);
+                    photo.setFilePath(filePath.toString());
+                } catch (IOException e) {
+                    System.err.println("Failed to write default image for photo: " + e.getMessage());
+                    // Use fallback path; file won't exist but loadFile will provide default image
+                    photo.setFilePath("/app/uploads/" + fileName);
+                }
+                photo.setFileName(fileName);
+                photo.setFileSize((long) DEFAULT_IMAGE.length);
                 photo.setContentType("image/jpeg");
                 photo.setIsPrimary(p == 0);
                 post.getPhotos().add(photo);

@@ -6,7 +6,7 @@ import './CreatePostPage.css';
 
 function CreatePostPage() {
   const navigate = useNavigate();
-  const { isAuthenticated, apiService } = useAuth();
+  const { isAuthenticated, apiService, user } = useAuth();
   const fileInputRef = useRef(null);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,7 +22,8 @@ function CreatePostPage() {
     description: '',
     price: '',
     categoryId: '',
-    subcategoryId: ''
+    subcategoryId: '',
+    active: true
   });
 
   useEffect(() => {
@@ -123,13 +124,15 @@ function CreatePostPage() {
 
     try {
       setSubmitting(true);
-      const postData = {
-        title: formData.title.trim(),
-        description: formData.description || '',
-        price: formData.price ? parseFloat(formData.price) : null,
-        categoryId: parseInt(formData.categoryId),
-        subcategoryId: parseInt(formData.subcategoryId)
-      };
+       const postData = {
+         title: formData.title.trim(),
+         description: formData.description || '',
+         price: formData.price ? parseFloat(formData.price) : null,
+         categoryId: parseInt(formData.categoryId),
+         subcategoryId: parseInt(formData.subcategoryId),
+         keycloakId: user?.keycloakId || user?.sub,
+         isActive: formData.active
+       };
 
       const response = await apiService.createPost(postData);
       const newPostId = response.data.id;
@@ -260,27 +263,42 @@ function CreatePostPage() {
             </select>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="subcategoryId">Подкатегория *</label>
-            <select
-              id="subcategoryId"
-              name="subcategoryId"
-              value={formData.subcategoryId}
-              onChange={handleChange}
-              disabled={submitting || !formData.categoryId}
-            >
-              <option value="">Выберите подкатегорию</option>
-              {formData.categoryId && categories
-                .find(c => c.id === parseInt(formData.categoryId))
-                ?.subcategories?.map(sub => (
-                  <option key={sub.id} value={sub.id}>
-                    {sub.name}
-                  </option>
-                ))}
-            </select>
-          </div>
+           <div className="form-group">
+             <label htmlFor="subcategoryId">Подкатегория *</label>
+             <select
+               id="subcategoryId"
+               name="subcategoryId"
+               value={formData.subcategoryId}
+               onChange={handleChange}
+               disabled={submitting || !formData.categoryId}
+             >
+               <option value="">Выберите подкатегорию</option>
+               {formData.categoryId && categories
+                 .find(c => c.id === parseInt(formData.categoryId))
+                 ?.subcategories?.map(sub => (
+                   <option key={sub.id} value={sub.id}>
+                     {sub.name}
+                   </option>
+                 ))}
+             </select>
+           </div>
 
-          <div className="create-post-actions">
+           <div className="form-group">
+             <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+               <input
+                 type="checkbox"
+                 id="active"
+                 name="active"
+                 checked={formData.active}
+                 onChange={(e) => setFormData(prev => ({ ...prev, active: e.target.checked }))}
+                 disabled={submitting}
+                 style={{ width: 'auto', margin: 0 }}
+               />
+               Активно
+             </label>
+           </div>
+
+           <div className="create-post-actions">
             <button
               type="submit"
               className="submit-btn"

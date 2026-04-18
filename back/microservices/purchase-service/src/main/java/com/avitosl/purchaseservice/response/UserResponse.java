@@ -1,5 +1,6 @@
 package com.avitosl.purchaseservice.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UserResponse {
     private Long id;
     private String username;
@@ -18,6 +20,9 @@ public class UserResponse {
     private String firstName;
     private String lastName;
     private String phoneNumber;
+    private String keycloakId;
+    private Double walletBalance;
+    private Boolean enabled;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

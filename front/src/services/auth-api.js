@@ -67,7 +67,9 @@ class AuthApiService {
   }
 
   getPosts(page = 0, size = 20) {
-    return this.client.get('/posts', { params: { page, size } });
+    // Ensure page is a valid integer to avoid malformed query parameters
+    const numericPage = (typeof page === 'number' && !isNaN(page)) ? page : 0;
+    return this.client.get('/posts', { params: { page: numericPage, size } });
   }
 
   getPost(id) {
@@ -223,7 +225,8 @@ class AuthApiService {
 
   // Purchase methods
   getUserPurchases(page = 0, size = 20) {
-    return this.client.get('/purchases', { params: { page, size } });
+    const numericPage = (typeof page === 'number' && !isNaN(page)) ? page : 0;
+    return this.client.get('/purchases', { params: { page: numericPage, size } });
   }
 
   getWalletBalance() {

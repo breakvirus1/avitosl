@@ -63,4 +63,25 @@ public class UserService {
         User user = getUserById(id);
         userRepository.delete(user);
     }
+
+    public User addFundsToWallet(Long userId, Double amount) {
+        if (amount == null || amount <= 0) {
+            throw new IllegalArgumentException("Amount must be positive");
+        }
+        User user = getUserById(userId);
+        user.setWalletBalance(user.getWalletBalance() + amount);
+        return userRepository.save(user);
+    }
+
+    public User subtractFromWallet(Long userId, Double amount) {
+        if (amount == null || amount <= 0) {
+            throw new IllegalArgumentException("Amount must be positive");
+        }
+        User user = getUserById(userId);
+        if (user.getWalletBalance() < amount) {
+            throw new RuntimeException("Insufficient funds");
+        }
+        user.setWalletBalance(user.getWalletBalance() - amount);
+        return userRepository.save(user);
+    }
 }

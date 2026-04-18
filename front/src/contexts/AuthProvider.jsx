@@ -61,12 +61,13 @@ export const AuthProvider = ({ children }) => {
       try {
         const currentUser = await getUser();
         if (currentUser) {
-          // Формируем правильный объект user с id и sub из profile
-          const enrichedUser = {
-            ...currentUser,
-            id: currentUser.profile?.sub, // Используем sub как id
-            sub: currentUser.profile?.sub
-          };
+           // Формируем правильный объект user с id и sub из profile
+           const enrichedUser = {
+             ...currentUser,
+             id: currentUser.profile?.sub, // Используем sub как id
+             sub: currentUser.profile?.sub,
+             keycloakId: currentUser.profile?.sub
+           };
           setUser(enrichedUser);
           setIsAuthenticated(true);
         }
@@ -99,12 +100,13 @@ export const AuthProvider = ({ children }) => {
             console.log('Realm access:', user.profile?.realm_access);
             console.log('Resource access:', user.profile?.resource_access);
 
-            // Формируем правильный объект user с id и sub из profile
-            const enrichedUser = {
-              ...user,
-              id: user.profile?.sub, // Используем sub как id
-              sub: user.profile?.sub
-            };
+             // Формируем правильный объект user с id и sub из profile
+             const enrichedUser = {
+               ...user,
+               id: user.profile?.sub, // Используем sub как id
+               sub: user.profile?.sub,
+               keycloakId: user.profile?.sub
+             };
 
             setUser(enrichedUser);
             setIsAuthenticated(true);

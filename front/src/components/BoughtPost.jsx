@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import AuthBar from './AuthBar';
-import './PostView.css';
+import './BoughtPost.css';
 
 function BoughtPost() {
   const { id } = useParams();

@@ -7,7 +7,7 @@ import './CreatePostPage.css';
 function EditPostPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated, apiService } = useAuth();
+  const { isAuthenticated, apiService, user } = useAuth();
   const fileInputRef = useRef(null);
   
   const [post, setPost] = useState(null);
@@ -20,13 +20,14 @@ function EditPostPage() {
   const [uploadingFile, setUploadingFile] = useState(null);
   const [photos, setPhotos] = useState([]);
 
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    price: '',
-    categoryId: '',
-    subcategoryId: ''
-  });
+   const [formData, setFormData] = useState({
+     title: '',
+     description: '',
+     price: '',
+     categoryId: '',
+     subcategoryId: '',
+     active: false
+   });
 
   useEffect(() => {
     if (isAuthenticated && id) {
@@ -42,13 +43,14 @@ function EditPostPage() {
       const response = await apiService.getPost(id);
       const postData = response.data;
       setPost(postData);
-      setFormData({
-        title: postData.title,
-        description: postData.description || '',
-        price: postData.price?.toString() || '',
-        categoryId: postData.category?.id?.toString() || '',
-        subcategoryId: postData.subcategory?.id?.toString() || ''
-      });
+        setFormData({
+          title: postData.title,
+          description: postData.description || '',
+          price: postData.price?.toString() || '',
+          categoryId: postData.category?.id?.toString() || '',
+          subcategoryId: postData.subcategory?.id?.toString() || '',
+          active: postData.isActive
+        });
       setError(null);
     } catch (err) {
       console.error('Error fetching post:', err);
@@ -110,13 +112,15 @@ function EditPostPage() {
 
     try {
       setSubmitting(true);
-      const postData = {
-        title: formData.title.trim(),
-        description: formData.description || '',
-        price: formData.price ? parseFloat(formData.price) : null,
-        categoryId: parseInt(formData.categoryId),
-        subcategoryId: parseInt(formData.subcategoryId)
-      };
+       const postData = {
+         title: formData.title.trim(),
+         description: formData.description || '',
+         price: formData.price ? parseFloat(formData.price) : null,
+         categoryId: parseInt(formData.categoryId),
+         subcategoryId: parseInt(formData.subcategoryId),
+         isActive: formData.active,
+         keycloakId: user?.keycloakId || user?.sub
+       };
 
       await apiService.updatePost(id, postData);
       setSuccess(true);
@@ -322,6 +326,21 @@ function EditPostPage() {
                   <option key={sub.id} value={sub.id}>{sub.name}</option>
                 ))}
               </select>
+            </div>
+
+            <div className="form-group">
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  id="active"
+                  name="active"
+                  checked={formData.active}
+                  onChange={(e) => setFormData(prev => ({ ...prev, active: e.target.checked }))}
+                  disabled={submitting}
+                  style={{ width: 'auto', margin: 0 }}
+                />
+                Активно
+              </label>
             </div>
 
             <div className="form-actions">

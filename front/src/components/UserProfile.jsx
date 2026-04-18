@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import AuthBar from './AuthBar';
@@ -6,40 +6,75 @@ import './UserProfile.css';
 
 function UserProfile() {
   const navigate = useNavigate();
-  const { user, isAuthenticated, logout, apiService } = useAuth();
+  const { user, isAuthenticated, logout, apiService, fetchUnreadCount } = useAuth();
   const [balance, setBalance] = useState(0);
-  const [purchases, setPurchases] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [showAddFundsModal, setShowAddFundsModal] = useState(false);
   const [fundsAmount, setFundsAmount] = useState('');
   const [isAddingFunds, setIsAddingFunds] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [notificationsLoading, setNotificationsLoading] = useState(true);
+
+  // Callbacks first to avoid TDZ in dependencies
+  const fetchBalance = useCallback(async () => {
+    try {
+      const response = await apiService.getWalletBalance();
+      setBalance(response.data.balance ?? response.data);
+    } catch (error) {
+      console.error('Failed to fetch balance:', error);
+    }
+  }, [apiService]);
+
+  const fetchNotifications = useCallback(async () => {
+    try {
+      setNotificationsLoading(true);
+      const response = await apiService.getUnreadMessages();
+      const messages = response.data || [];
+      
+      const notificationsWithSender = await Promise.all(
+        messages.map(async (msg) => {
+          try {
+            const sender = await apiService.getUserByKeycloakId(msg.senderKeycloakId);
+            return {
+              id: msg.id,
+              type: 'chat',
+              message: msg.message,
+              createdAt: msg.createdAt,
+              read: msg.isRead,
+              senderId: msg.senderKeycloakId,
+              senderFirstName: sender.data?.firstName || 'Пользователь',
+              senderLastName: sender.data?.lastName || '',
+              postId: null
+            };
+          } catch {
+            return {
+              id: msg.id,
+              type: 'chat',
+              message: msg.message,
+              createdAt: msg.createdAt,
+              read: msg.isRead,
+              senderId: msg.senderKeycloakId,
+              senderFirstName: 'Пользователь',
+              senderLastName: '',
+              postId: null
+            };
+          }
+        })
+      );
+      
+      setNotifications(notificationsWithSender);
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error);
+    } finally {
+      setNotificationsLoading(false);
+    }
+  }, [apiService]);
 
   useEffect(() => {
     if (isAuthenticated) {
       fetchBalance();
-      fetchPurchases();
+      fetchNotifications();
     }
-  }, [isAuthenticated]);
-
-  const fetchBalance = async () => {
-    try {
-      const response = await apiService.getWalletBalance();
-      setBalance(response.data);
-    } catch (error) {
-      console.error('Failed to fetch balance:', error);
-    }
-  };
-
-  const fetchPurchases = async () => {
-    try {
-      const response = await apiService.getUserPurchases();
-      setPurchases(response.data.content || []);
-    } catch (error) {
-      console.error('Failed to fetch purchases:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [isAuthenticated, fetchBalance, fetchNotifications]);
 
   const handleLogout = async () => {
     try {
@@ -72,10 +107,34 @@ function UserProfile() {
     }
   };
 
-  const handleCloseAddFundsModal = () => {
-    setShowAddFundsModal(false);
-    setFundsAmount('');
-  };
+   const handleCloseAddFundsModal = () => {
+     setShowAddFundsModal(false);
+     setFundsAmount('');
+   };
+
+   const handleNotificationClick = async (notification) => {
+     try {
+       await apiService.markAsRead(notification.id);
+       if (fetchUnreadCount) {
+         await fetchUnreadCount();
+       }
+       // Navigate to post page if postId exists, otherwise to home
+       if (notification.postId) {
+         navigate(`/post/${notification.postId}`);
+       } else {
+         navigate('/');
+       }
+       // Store chat data to open chat after navigation (only for chat messages)
+       if (notification.type === 'chat') {
+         sessionStorage.setItem('pendingChat', JSON.stringify({
+           receiverId: notification.senderId,
+           receiverName: notification.senderFirstName
+         }));
+       }
+     } catch (err) {
+       console.error('Error marking notification as read:', err);
+     }
+   };
 
   if (!isAuthenticated || !user) {
     return (
@@ -151,30 +210,43 @@ function UserProfile() {
           </div>
         </div>
 
-        <div className="user-profile-purchases">
-          <h2>Мои покупки</h2>
-          {loading ? (
-            <p>Загрузка...</p>
-          ) : purchases.length === 0 ? (
-            <p>У вас пока нет покупок</p>
+        {/* Purchases CTA */}
+        <div className="user-profile-purchases-cta">
+          <button
+            className="user-profile-btn"
+            onClick={() => navigate('/purchases')}
+          >
+            Мои покупки
+          </button>
+        </div>
+
+        {/* Notifications Section */}
+        <div className="user-profile-notifications">
+          <h2>Уведомления</h2>
+          {notificationsLoading ? (
+            <p className="user-profile-notifications-loading">Загрузка...</p>
+          ) : notifications.length === 0 ? (
+            <p className="user-profile-notifications-empty">Нет уведомлений</p>
           ) : (
-            <div className="user-profile-purchases-list">
-              {purchases.map((purchase) => (
-                <div key={purchase.id} className="user-profile-purchase-item">
-                  <div className="user-profile-purchase-info">
-                    <h3>{purchase.post?.title || 'Объявление'}</h3>
-                    <p>Цена: {purchase.purchasePrice} ₽</p>
-                    <p>Дата покупки: {new Date(purchase.createdAt).toLocaleDateString('ru-RU')}</p>
-                  </div>
-                  <button
-                    onClick={() => navigate(`/bought/${purchase.post?.id}`)}
-                    className="user-profile-view-post-btn"
-                  >
-                    Просмотреть
-                  </button>
-                </div>
+            <ul className="user-profile-notifications-list">
+              {notifications.slice(0, 5).map((notification) => (
+                <li
+                  key={notification.id}
+                  className="user-profile-notification-item"
+                  onClick={() => handleNotificationClick(notification)}
+                >
+                  <span className="user-profile-notification-message">
+                    {notification.senderFirstName}: {notification.message.length > 30 ? notification.message.substring(0, 30) + '...' : notification.message}
+                  </span>
+                  <span className="user-profile-notification-time">
+                    {new Date(notification.createdAt).toLocaleDateString('ru-RU')}
+                  </span>
+                  {!notification.read && (
+                    <span className="user-profile-notification-unread"></span>
+                  )}
+                </li>
               ))}
-            </div>
+            </ul>
           )}
         </div>
 

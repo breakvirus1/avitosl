@@ -17,15 +17,15 @@ spring:
           predicates:
             - Path=/api/subcategories/**
         - id: post-service
-          uri: lb://post-service
+          uri: http://post-service:8083
           predicates:
             - Path=/api/posts/**
         - id: comments-service
-          uri: lb://post-service
+          uri: http://post-service:8083
           predicates:
             - Path=/api/comments/**
         - id: photos-service
-          uri: lb://post-service
+          uri: http://post-service:8083
           predicates:
             - Path=/api/photos/**
         - id: chat-service
@@ -37,7 +37,7 @@ spring:
           predicates:
             - Path=/api/purchases/**
         - id: fake-data-service
-          uri: lb://post-service
+          uri: http://post-service:8083
           predicates:
             - Path=/api/fake-data/**
         - id: eureka-server

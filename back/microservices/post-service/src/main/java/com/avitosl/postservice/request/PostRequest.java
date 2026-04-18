@@ -22,4 +22,6 @@ public class PostRequest {
     private Long categoryId;
 
     private Long subcategoryId;
+
+    private Boolean isActive = true;
 }
