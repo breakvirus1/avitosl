@@ -1,7 +1,4 @@
-<<<<<<< HEAD
-=======
 import { useState, useEffect, useCallback } from 'react';
->>>>>>> kafka
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import AuthBar from './AuthBar';
@@ -110,34 +107,34 @@ function UserProfile() {
     }
   };
 
-   const handleCloseAddFundsModal = () => {
-     setShowAddFundsModal(false);
-     setFundsAmount('');
-   };
+  const handleCloseAddFundsModal = () => {
+    setShowAddFundsModal(false);
+    setFundsAmount('');
+  };
 
-   const handleNotificationClick = async (notification) => {
-     try {
-       await apiService.markAsRead(notification.id);
-       if (fetchUnreadCount) {
-         await fetchUnreadCount();
-       }
-       // Navigate to post page if postId exists, otherwise to home
-       if (notification.postId) {
-         navigate(`/post/${notification.postId}`);
-       } else {
-         navigate('/');
-       }
-       // Store chat data to open chat after navigation (only for chat messages)
-       if (notification.type === 'chat') {
-         sessionStorage.setItem('pendingChat', JSON.stringify({
-           receiverId: notification.senderId,
-           receiverName: notification.senderFirstName
-         }));
-       }
-     } catch (err) {
-       console.error('Error marking notification as read:', err);
-     }
-   };
+  const handleNotificationClick = async (notification) => {
+    try {
+      await apiService.markAsRead(notification.id);
+      if (fetchUnreadCount) {
+        await fetchUnreadCount();
+      }
+      // Navigate to post page if postId exists, otherwise to home
+      if (notification.postId) {
+        navigate(`/post/${notification.postId}`);
+      } else {
+        navigate('/');
+      }
+      // Store chat data to open chat after navigation (only for chat messages)
+      if (notification.type === 'chat') {
+        sessionStorage.setItem('pendingChat', JSON.stringify({
+          receiverId: notification.senderId,
+          receiverName: notification.senderFirstName
+        }));
+      }
+    } catch (err) {
+      console.error('Error marking notification as read:', err);
+    }
+  };
 
   if (!isAuthenticated || !user) {
     return (

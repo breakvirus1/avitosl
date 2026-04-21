@@ -1,47 +1,18 @@
 import { useState, useEffect } from 'react';
-<<<<<<< HEAD
-import { useParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-=======
 import { useNavigate } from 'react-router-dom';
->>>>>>> kafka
 import Chat from './Chat';
 import './PostView.css';
 
 function PostViewBuyer({ post, user, comments, onCreateComment, onUpdateComment, onDeleteComment, onPurchasePost }) {
   const navigate = useNavigate();
-<<<<<<< HEAD
-  const { isAuthenticated, apiService, user } = useAuth();
-  const [post, setPost] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-=======
   const isAuthenticated = !!user;
->>>>>>> kafka
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showChat, setShowChat] = useState(false);
   const [chatReceiverId, setChatReceiverId] = useState(null);
   const [chatReceiverName, setChatReceiverName] = useState('');
-<<<<<<< HEAD
-  
-  // Комментарии
-  const [comments, setComments] = useState([]);
-  const [loadingComments, setLoadingComments] = useState(false);
-  const [commentText, setCommentText] = useState('');
-  const [editingCommentId, setEditingCommentId] = useState(null);
-  const [editingText, setEditingText] = useState('');
-
-  useEffect(() => {
-    if (isAuthenticated && id) {
-      fetchPost();
-      fetchComments();
-    }
-  }, [isAuthenticated, id]);
-=======
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editingText, setEditingText] = useState('');
   const [commentText, setCommentText] = useState('');
->>>>>>> kafka
 
   // Check for pending chat from notification click
   useEffect(() => {
@@ -75,87 +46,9 @@ function PostViewBuyer({ post, user, comments, onCreateComment, onUpdateComment,
     }
   };
 
-<<<<<<< HEAD
-  const fetchComments = async () => {
-    try {
-      setLoadingComments(true);
-      const response = await apiService.getPostComments(id);
-      setComments(response.data);
-    } catch (err) {
-      console.error('Error fetching comments:', err);
-    } finally {
-      setLoadingComments(false);
-    }
-  };
-
-  const handleCreateComment = async (e) => {
-    e.preventDefault();
-    if (!commentText.trim()) return;
-    
-    try {
-      await apiService.createComment({
-        text: commentText.trim(),
-        postId: parseInt(id)
-      });
-      setCommentText('');
-      fetchComments();
-    } catch (err) {
-      console.error('Error creating comment:', err);
-      alert(err.response?.data?.message || 'Ошибка при создании комментария');
-    }
-  };
-
-  const handleUpdateComment = async (commentId) => {
-    if (!editingText.trim()) return;
-    
-    try {
-      await apiService.updateComment(commentId, {
-        text: editingText.trim(),
-        postId: parseInt(id)
-      });
-      setEditingCommentId(null);
-      setEditingText('');
-      fetchComments();
-    } catch (err) {
-      console.error('Error updating comment:', err);
-      alert(err.response?.data?.message || 'Ошибка при обновлении комментария');
-    }
-  };
-
-  const handleDeleteComment = async (commentId) => {
-    if (!window.confirm('Вы уверены, что хотите удалить этот комментарий?')) {
-      return;
-    }
-    
-    try {
-      await apiService.deleteComment(commentId);
-      fetchComments();
-    } catch (err) {
-      console.error('Error deleting comment:', err);
-      alert(err.response?.data?.message || 'Ошибка при удалении комментария');
-    }
-  };
-
-  const startEditing = (comment) => {
-    setEditingCommentId(comment.id);
-    setEditingText(comment.text);
-  };
-
-  const cancelEditing = () => {
-    setEditingCommentId(null);
-    setEditingText('');
-  };
-
-  const isCommentOwner = (commentAuthor) => {
-    return commentAuthor?.id === user?.id || commentAuthor?.keycloakId === user?.sub;
-  };
-
-  const handleDeletePost = async () => {
-=======
   const handleUpdateComment = async (commentId) => {
     if (!editingText.trim()) return;
 
->>>>>>> kafka
     try {
       await onUpdateComment(commentId, { content: editingText.trim(), postId: post.id });
       setEditingCommentId(null);
@@ -268,16 +161,9 @@ function PostViewBuyer({ post, user, comments, onCreateComment, onUpdateComment,
   const currentPhoto = photos[currentIndex];
   const photoUrl = currentPhoto ? getPhotoUrl(currentPhoto.id) : null;
 
-<<<<<<< HEAD
-  // Рендер поста
-  const renderPost = () => (
-    <>
-      <button onClick={() => navigate('/')} className="post-view-back">
-=======
   const renderPost = () => (
     <>
       <button onClick={() => navigate(-1)} className="post-view-back">
->>>>>>> kafka
         ← Назад к списку
       </button>
 
@@ -314,21 +200,24 @@ function PostViewBuyer({ post, user, comments, onCreateComment, onUpdateComment,
                   <button
                     className="post-view-image-carousel-nav prev"
                     onClick={handlePrevImage}
+                    aria-label="Previous image"
                   >
                     ‹
                   </button>
                   <button
                     className="post-view-image-carousel-nav next"
                     onClick={handleNextImage}
+                    aria-label="Next image"
                   >
                     ›
                   </button>
                   <div className="post-view-image-carousel-dots">
-                    {photos.map((_, idx) => (
-                      <div
-                        key={idx}
-                        className={`post-view-image-carousel-dot ${idx === currentIndex ? 'active' : ''}`}
-                        onClick={(e) => handleDotClick(idx, e)}
+                    {photos.map((photo, index) => (
+                      <button
+                        key={photo.id}
+                        className={`post-view-image-carousel-dot ${index === currentIndex ? 'active' : ''}`}
+                        onClick={(e) => handleDotClick(index, e)}
+                        aria-label={`Go to image ${index + 1}`}
                       />
                     ))}
                   </div>
@@ -338,12 +227,9 @@ function PostViewBuyer({ post, user, comments, onCreateComment, onUpdateComment,
           )}
 
           <div className="post-view-description">
-            <h3>Описание</h3>
-            <p>{post.description || 'Без описания'}</p>
+            {post.description}
           </div>
-        </div>
 
-        <div className="post-view-sidebar">
           <div className="post-view-price-card">
             <div className="post-view-price">
               {formatPrice(post.price)}
@@ -354,294 +240,111 @@ function PostViewBuyer({ post, user, comments, onCreateComment, onUpdateComment,
               ) : (
                 <span className="post-view-status-inactive">Неактивно</span>
               )}
+              {post.purchased && (
+                <span className="post-view-status-purchased">Куплено</span>
+              )}
             </div>
           </div>
 
           <div className="post-view-author-card">
             <h4>Продавец</h4>
-            {post.author && (
-              <>
-                <p className="post-view-author-name">
-                  {post.author.firstName} {post.author.lastName || ''}
-                </p>
-                <p className="post-view-author-email">
-                  {post.author.email}
-                </p>
-              </>
-            )}
-          </div>
-
-          <div className="post-view-actions">
-            {!isOwner && (
+            <p className="post-view-author-name">
+              {post.author?.firstName} {post.author?.lastName || ''}
+            </p>
+            <p className="post-view-author-email">
+              {post.author?.email}
+            </p>
+            {isAuthenticated && !isOwner && post.isActive && !post.purchased && (
               <button
                 className="post-view-contact-btn"
                 onClick={handleOpenChat}
+                style={{ marginTop: '8px' }}
               >
                 Написать продавцу
               </button>
             )}
-            {!isOwner && post.isActive && (
-                <button
-                  className="post-view-purchase-btn"
-                  onClick={onPurchasePost}
-                >
-                  Купить
-                </button>
-              )}
           </div>
+
+          {isAuthenticated && isOwner && (
+            <div className="post-view-actions">
+              <button
+                className="post-view-edit-btn"
+                onClick={() => navigate(`/edit-post/${post.id}`)}
+              >
+                Редактировать
+              </button>
+              <button
+                className="post-view-delete-btn"
+                onClick={handleDeletePost}
+              >
+                Удалить
+              </button>
+            </div>
+          )}
+
+          {isAuthenticated && !isOwner && post.isActive && !post.purchased && (
+            <div className="post-view-actions">
+              <button
+                className="post-view-purchase-btn"
+                onClick={onPurchasePost}
+              >
+                Купить за {formatPrice(post.price)}
+              </button>
+            </div>
+          )}
+
+          {post.purchased && (
+            <div className="post-view-purchase-info">
+              <h4>Вы купили это объявление</h4>
+              <p>Дата покупки: {formatDate(post.purchaseDate)}</p>
+            </div>
+          )}
 
           <div className="post-view-dates">
             <p>Создано: {formatDate(post.createdAt)}</p>
-            {post.updatedAt && (
+            {post.updatedAt && post.updatedAt !== post.createdAt && (
               <p>Обновлено: {formatDate(post.updatedAt)}</p>
             )}
           </div>
         </div>
       </div>
-    </>
-  );
 
-<<<<<<< HEAD
-  // Рендер секции комментариев
-  const renderComments = () => (
-    <div className="post-view-comments-section">
-      <div className="post-view-comments-header">
-        <h3>Комментарии ({comments.length})</h3>
-      </div>
-      
-      {isAuthenticated ? (
-        <form onSubmit={handleCreateComment} className="post-view-comment-form">
-          <textarea
-            value={commentText}
-            onChange={(e) => setCommentText(e.target.value)}
-            placeholder="Напишите комментарий..."
-            className="post-view-comment-input"
-            rows="3"
-            maxLength="2000"
-          />
-          <div className="post-view-comment-form-actions">
-            <button type="submit" className="post-view-comment-submit">
-              Отправить
-            </button>
-          </div>
-        </form>
-      ) : (
-        <div className="post-view-comments-login-prompt">
-          <p>Чтобы оставить комментарий, необходимо <button onClick={() => navigate('/')} className="post-view-login-link">войти</button> в систему</p>
-        </div>
-      )}
-      
-      <div className="post-view-comments-list">
-        {loadingComments ? (
-          <div className="post-view-comments-loading">Загрузка комментариев...</div>
-        ) : comments.length === 0 ? (
-          <div className="post-view-comments-empty">Пока нет комментариев. Будьте первым!</div>
-        ) : (
-          comments.map((comment) => (
-            <div key={comment.id} className="post-view-comment-item">
-              <div className="post-view-comment-header">
-                <div className="post-view-comment-author">
-                  <span className="post-view-comment-author-name">
-                    {comment.author?.firstName} {comment.author?.lastName || ''}
-                  </span>
-                  <span className="post-view-comment-date">
-                    {formatDate(comment.createdAt)}
-                  </span>
-                  {comment.updatedAt && comment.updatedAt !== comment.createdAt && (
-                    <span className="post-view-comment-edited">(отредактировано)</span>
-                  )}
-                </div>
-                
-                {isAuthenticated && isCommentOwner(comment.author) && (
-                  <div className="post-view-comment-actions">
-                    {editingCommentId === comment.id ? (
-                      <>
-                        <button
-                          onClick={() => handleUpdateComment(comment.id)}
-                          className="post-view-comment-save-btn"
-                        >
-                          Сохранить
-                        </button>
-                        <button
-                          type="button"
-                          onClick={cancelEditing}
-                          className="post-view-comment-cancel-btn"
-                        >
-                          Отмена
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => startEditing(comment)}
-                          className="post-view-comment-edit-btn"
-                        >
-                          Редактировать
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteComment(comment.id)}
-                          className="post-view-comment-delete-btn"
-                        >
-                          Удалить
-                        </button>
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
-              
-              <div className="post-view-comment-content">
-                {editingCommentId === comment.id ? (
-                  <textarea
-                    value={editingText}
-                    onChange={(e) => setEditingText(e.target.value)}
-                    className="post-view-comment-edit-textarea"
-                    rows="3"
-                    maxLength="2000"
-                  />
-                ) : (
-                  <p>{comment.text}</p>
-                )}
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-    </div>
-  );
-
-  return (
-    <div className="post-view-wrapper">
-=======
-  const renderComments = () => {
-    const renderComment = (comment) => (
-      <div key={comment.id} className="post-view-comment-item">
-        <div className="post-view-comment-header">
-          <div className="post-view-comment-author">
-            <span className="post-view-comment-author-name">
-              {comment.authorFirstName || 'Пользователь'} {comment.authorLastName || ''}
-            </span>
-            <span className="post-view-comment-date">
-              {formatDate(comment.createdAt)}
-            </span>
-            {comment.updatedAt && comment.updatedAt !== comment.createdAt && (
-              <span className="post-view-comment-edited">(отредактировано)</span>
-            )}
-          </div>
-
-          {isCommentOwner(comment) && (
-            <div className="post-view-comment-actions">
-              {editingCommentId === comment.id ? (
-                <>
-                  <button
-                    onClick={() => handleUpdateComment(comment.id)}
-                    className="post-view-comment-save-btn"
-                  >
-                    Сохранить
-                  </button>
-                  <button
-                    type="button"
-                    onClick={cancelEditing}
-                    className="post-view-comment-cancel-btn"
-                  >
-                    Отмена
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => startEditing(comment)}
-                    className="post-view-comment-edit-btn"
-                  >
-                    Редактировать
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteComment(comment.id)}
-                    className="post-view-comment-delete-btn"
-                  >
-                    Удалить
-                  </button>
-                </>
-              )}
-            </div>
-          )}
-        </div>
-
-        <div className="post-view-comment-content">
-          {editingCommentId === comment.id ? (
-            <textarea
-              value={editingText}
-              onChange={(e) => setEditingText(e.target.value)}
-              className="post-view-comment-edit-textarea"
-              rows="3"
-              maxLength="2000"
-            />
-          ) : (
-            <p>{comment.content}</p>
-          )}
-        </div>
-      </div>
-    );
-
-    return (
-      <div className="post-view-comments-section">
-        <div className="post-view-comments-header">
-          <h3>Комментарии ({comments.length})</h3>
-        </div>
-
-        {isAuthenticated ? (
-          <form onSubmit={handleCreateComment} className="post-view-comment-form">
-            <textarea
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-              placeholder="Напишите комментарий..."
-              className="post-view-comment-input"
-              rows="3"
-              maxLength="2000"
-            />
-            <div className="post-view-comment-form-actions">
-              <button type="submit" className="post-view-comment-submit">
-                Отправить
-              </button>
-            </div>
-          </form>
-        ) : (
-          <div className="post-view-comments-login-prompt">
-            <p>Чтобы оставить комментарий, необходимо <button onClick={() => navigate('/')} className="post-view-login-link">войти</button> в систему</p>
-          </div>
-        )}
-
-        <div className="post-view-comments-list">
-          {comments.map(renderComment)}
-        </div>
-      </div>
-    );
-  };
-
-  return (
-    <>
->>>>>>> kafka
-      {renderPost()}
-      {renderComments()}
-      {showChat && (
+      {showChat && chatReceiverId && (
         <Chat
           receiverId={chatReceiverId}
           receiverName={chatReceiverName}
-          postId={post?.id}
+          postId={post.id}
           onClose={handleCloseChat}
         />
       )}
-<<<<<<< HEAD
-    </div>
-=======
     </>
->>>>>>> kafka
   );
+
+  if (loadingPost) {
+    return (
+      <div className="post-view-wrapper">
+        <div className="post-view-loading">Загрузка объявления...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="post-view-wrapper">
+        <div className="post-view-error">{error}</div>
+      </div>
+    );
+  }
+
+  if (!post) {
+    return (
+      <div className="post-view-wrapper">
+        <div className="post-view-error">Объявление не найдено</div>
+      </div>
+    );
+  }
+
+  return renderPost();
 }
 
 export default PostViewBuyer;
-
