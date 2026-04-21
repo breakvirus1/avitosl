@@ -2,10 +2,11 @@ import { useEffect, useState, useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
 import AuthBar from './AuthBar.jsx';
 import PostList from './PostList.jsx';
+import Chat from './Chat.jsx';
 import './Home.css';
 
 function Home() {
-  const { apiService: contextApiService } = useContext(AuthContext);
+  const { apiService: contextApiService, isAuthenticated } = useContext(AuthContext);
   const apiService = contextApiService;
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,10 +16,35 @@ function Home() {
     totalPages: 0,
     currentPage: 0
   });
+  // Chat state
+  const [showChat, setShowChat] = useState(false);
+  const [chatReceiverId, setChatReceiverId] = useState(null);
+  const [chatReceiverName, setChatReceiverName] = useState('');
 
   useEffect(() => {
     fetchPosts(0);
   }, []);
+
+  // Check for pending chat from notification click
+  useEffect(() => {
+    if (isAuthenticated) {
+      const pendingChat = sessionStorage.getItem('pendingChat');
+      if (pendingChat) {
+        try {
+          const { receiverId, receiverName } = JSON.parse(pendingChat);
+          if (receiverId && receiverName) {
+            setChatReceiverId(receiverId);
+            setChatReceiverName(receiverName);
+            setShowChat(true);
+          }
+        } catch (err) {
+          console.error('Error parsing pending chat:', err);
+        } finally {
+          sessionStorage.removeItem('pendingChat');
+        }
+      }
+    }
+  }, [isAuthenticated]);
 
   const fetchPosts = async (page = 0) => {
     try {
@@ -37,6 +63,12 @@ function Home() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCloseChat = () => {
+    setShowChat(false);
+    setChatReceiverId(null);
+    setChatReceiverName('');
   };
 
   const handlePageChange = (page) => {
@@ -67,9 +99,16 @@ function Home() {
 
   return (
     <div className="home-container">
-      <AuthBar />
+      <main className="home-main" style={{ maxWidth: '800px', margin: '0 auto', width: '100%' }}>
+        <AuthBar />
+        {showChat && (
+          <Chat
+            receiverId={chatReceiverId}
+            receiverName={chatReceiverName}
+            onClose={handleCloseChat}
+          />
+        )}
 
-      <main className="home-main">
         <div className="home-content-wrapper">
           <section className="posts-section">
             {error && (

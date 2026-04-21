@@ -1,0 +1,11 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres:5433/avito_post_db
+    username: user
+    password: 111111
+    driver-class-name: org.postgresql.Driver
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://eureka-server:8761/eureka/

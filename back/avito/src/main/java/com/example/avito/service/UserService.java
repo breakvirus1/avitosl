@@ -71,7 +71,10 @@ public class UserService {
 
     @CacheEvict(value = {"user", "users"}, allEntries = true)
     public void deleteUser(Long id) {
-        userRepository.deleteById(id);
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        user.setEnabled(false);
+        userRepository.save(user);
     }
 
     @Cacheable(value = "users")
@@ -118,5 +121,18 @@ public class UserService {
 
     public User saveUser(User user) {
         return userRepository.save(user);
+    }
+
+    public java.math.BigDecimal getUserWalletBalance(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        return user.getWalletBalance();
+    }
+
+    public void addFundsToWallet(Long userId, java.math.BigDecimal amount) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        user.setWalletBalance(user.getWalletBalance().add(amount));
+        userRepository.save(user);
     }
 }

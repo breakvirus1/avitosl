@@ -1,11 +1,12 @@
 import { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import AuthBar from './AuthBar';
 import './CreatePostPage.css';
 
 function CreatePostPage() {
   const navigate = useNavigate();
-  const { isAuthenticated, apiService } = useAuth();
+  const { isAuthenticated, apiService, user } = useAuth();
   const fileInputRef = useRef(null);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -21,7 +22,8 @@ function CreatePostPage() {
     description: '',
     price: '',
     categoryId: '',
-    subcategoryId: ''
+    subcategoryId: '',
+    active: true
   });
 
   useEffect(() => {
@@ -122,13 +124,15 @@ function CreatePostPage() {
 
     try {
       setSubmitting(true);
-      const postData = {
-        title: formData.title.trim(),
-        description: formData.description || '',
-        price: formData.price ? parseFloat(formData.price) : null,
-        categoryId: parseInt(formData.categoryId),
-        subcategoryId: parseInt(formData.subcategoryId)
-      };
+       const postData = {
+         title: formData.title.trim(),
+         description: formData.description || '',
+         price: formData.price ? parseFloat(formData.price) : null,
+         categoryId: parseInt(formData.categoryId),
+         subcategoryId: parseInt(formData.subcategoryId),
+         keycloakId: user?.keycloakId || user?.sub,
+         isActive: formData.active
+       };
 
       const response = await apiService.createPost(postData);
       const newPostId = response.data.id;
@@ -172,7 +176,9 @@ function CreatePostPage() {
 
   return (
     <div className="create-post-container">
-      <div className="create-post-header">
+      <div style={{ maxWidth: '800px', margin: '0 auto', width: '100%' }}>
+        <AuthBar />
+        <div className="create-post-header">
         <h1>Создать объявление</h1>
         <button
           className="cancel-btn"
@@ -257,27 +263,42 @@ function CreatePostPage() {
             </select>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="subcategoryId">Подкатегория *</label>
-            <select
-              id="subcategoryId"
-              name="subcategoryId"
-              value={formData.subcategoryId}
-              onChange={handleChange}
-              disabled={submitting || !formData.categoryId}
-            >
-              <option value="">Выберите подкатегорию</option>
-              {formData.categoryId && categories
-                .find(c => c.id === parseInt(formData.categoryId))
-                ?.subcategories?.map(sub => (
-                  <option key={sub.id} value={sub.id}>
-                    {sub.name}
-                  </option>
-                ))}
-            </select>
-          </div>
+           <div className="form-group">
+             <label htmlFor="subcategoryId">Подкатегория *</label>
+             <select
+               id="subcategoryId"
+               name="subcategoryId"
+               value={formData.subcategoryId}
+               onChange={handleChange}
+               disabled={submitting || !formData.categoryId}
+             >
+               <option value="">Выберите подкатегорию</option>
+               {formData.categoryId && categories
+                 .find(c => c.id === parseInt(formData.categoryId))
+                 ?.subcategories?.map(sub => (
+                   <option key={sub.id} value={sub.id}>
+                     {sub.name}
+                   </option>
+                 ))}
+             </select>
+           </div>
 
-          <div className="create-post-actions">
+           <div className="form-group">
+             <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+               <input
+                 type="checkbox"
+                 id="active"
+                 name="active"
+                 checked={formData.active}
+                 onChange={(e) => setFormData(prev => ({ ...prev, active: e.target.checked }))}
+                 disabled={submitting}
+                 style={{ width: 'auto', margin: 0 }}
+               />
+               Активно
+             </label>
+           </div>
+
+           <div className="create-post-actions">
             <button
               type="submit"
               className="submit-btn"
@@ -330,7 +351,7 @@ function CreatePostPage() {
               {photos.map((photo) => (
                 <div key={photo.id} className="photo-item">
                   <img
-                    src={`http://localhost:8081/api/photos/${photo.id}/file`}
+                    src={`/api/photos/${photo.id}/file`}
                     alt="Фото"
                     className="photo-preview-img"
                   />
@@ -339,6 +360,7 @@ function CreatePostPage() {
             </div>
           </div>
         )}
+        </div>
       </div>
     </div>
   );

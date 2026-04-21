@@ -61,7 +61,7 @@ function PostList({ posts, onDelete, loading, isAdmin, pagination, onPageChange,
   };
 
   const getPhotoUrl = (photoId) => {
-    return `http://localhost:8081/api/photos/${photoId}/file`;
+    return `/api/photos/${photoId}/file`;
   };
 
   if (loading) {
@@ -144,29 +144,34 @@ function PostList({ posts, onDelete, loading, isAdmin, pagination, onPageChange,
                     </div>
                   )}
                 </div>
-                <div className="post-card-content">
-                  <h3 className="post-card-title">{post.title}</h3>
-                  <p className="post-card-description">
-                    {post.description && post.description.length > 100
-                      ? post.description.substring(0, 100) + '...'
-                      : post.description || 'Без описания'}
-                  </p>
-                  <div className="post-card-meta">
-                    <strong className="post-card-price">
-                      {post.price ? `${post.price.toLocaleString()} ₽` : 'Договорная'}
-                    </strong>
-                    <span className="post-card-date">
-                      {new Date(post.createdAt).toLocaleDateString('ru-RU')}
-                    </span>
-                  </div>
-                  <div className="post-card-footer">
-                    <div className="post-card-actions">
-                      <button className="post-card-btn post-card-btn-details">
-                        Подробнее
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                 <div className="post-card-content">
+                   <h3 className="post-card-title">{post.title}</h3>
+                   <p className="post-card-description">
+                     {post.description && post.description.length > 100
+                       ? post.description.substring(0, 100) + '...'
+                       : post.description || 'Без описания'}
+                   </p>
+                   <div className="post-card-meta">
+                     <strong className="post-card-price">
+                       {post.price ? `${post.price.toLocaleString()} ₽` : 'Договорная'}
+                     </strong>
+                     <span className="post-card-date">
+                       {new Date(post.createdAt).toLocaleDateString('ru-RU')}
+                     </span>
+                     {post.author && (
+                       <span className="post-card-author">
+                         Автор: {post.author.firstName} {post.author.lastName || ''}
+                       </span>
+                     )}
+                   </div>
+                   <div className="post-card-footer">
+                     <div className="post-card-actions">
+                       <button className="post-card-btn post-card-btn-details">
+                         Подробнее
+                       </button>
+                     </div>
+                   </div>
+                 </div>
               </div>
             );
           }

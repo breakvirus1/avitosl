@@ -1,16 +1,17 @@
-/* Notifications Page Styles */
+/* Windows XP Luna Blue - Notifications */
 .notifications-page {
   min-height: calc(100vh - 200px);
-  background: #f5f5f5;
-  padding: 20px;
+  background: #ece9d8;
+  padding: 10px;
 }
 
 .notifications-page-container {
   max-width: 800px;
   margin: 0 auto;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+  border: 1px solid #003c74;
+  border-radius: 3px;
+  box-shadow: 2px 2px 0 #003c74, 3px 3px 0 #1e3f6f;
   overflow: hidden;
 }
 
@@ -18,29 +19,30 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid #e0e0e0;
-  background: #f8f9fa;
+  padding: 12px 16px;
+  border-bottom: 1px solid #d9d9d9;
+  background: linear-gradient(to bottom, #f0f0f0 0%, #d9d9d9 100%);
 }
 
 .notifications-page-header h1 {
   margin: 0;
-  font-size: 24px;
-  font-weight: 600;
-  color: #333;
+  font-size: 16px;
+  font-weight: bold;
+  color: #000000;
   font-family: 'Tahoma', sans-serif;
 }
 
 .notifications-back-btn {
-  padding: 8px 16px;
+  padding: 6px 12px;
   border-radius: 3px;
-  border: 1px solid #7f9db9;
+  border: 1px solid #003c74;
   font-size: 12px;
   font-family: 'Tahoma', sans-serif;
   cursor: pointer;
   transition: all 0.2s;
   background: linear-gradient(to bottom, #f0f0f0 0%, #d9d9d9 100%);
   color: #000000;
+  box-shadow: 1px 1px 0 #003c74;
 }
 
 .notifications-back-btn:hover {
@@ -58,13 +60,13 @@
 .notifications-empty {
   padding: 60px 20px;
   text-align: center;
-  color: #666;
-  font-size: 14px;
+  color: #666666;
+  font-size: 12px;
   font-family: 'Tahoma', sans-serif;
 }
 
 .notifications-error {
-  color: #d32f2f;
+  color: #e60012;
 }
 
 .notifications-list {
@@ -74,35 +76,40 @@
 }
 
 .notification-item {
-  padding: 16px 24px;
-  border-bottom: 1px solid #f0f0f0;
+  padding: 12px 16px;
+  border-bottom: 1px solid #ece9d8;
   cursor: pointer;
   position: relative;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: 8px;
+  background: #ffffff;
 }
 
 .notification-item:hover {
-  background-color: #f5f5f5;
+  background: linear-gradient(to bottom, #e5f3ff 0%, #cce8ff 100%);
 }
 
 .notification-item:last-child {
   border-bottom: none;
 }
 
+.notification-item.unread {
+  background: #f0f7ff;
+}
+
 .notification-message {
   flex: 1;
-  font-size: 14px;
-  color: #333;
+  font-size: 12px;
+  color: #000000;
   line-height: 1.4;
   font-family: 'Tahoma', sans-serif;
 }
 
 .notification-time {
-  font-size: 12px;
-  color: #999;
+  font-size: 11px;
+  color: #666666;
   white-space: nowrap;
   font-family: 'Tahoma', sans-serif;
 }
@@ -111,25 +118,34 @@
   flex-shrink: 0;
   width: 8px;
   height: 8px;
-  background-color: #1976d2;
+  background-color: #3A6EA5;
+  border: 1px solid #003c74;
   border-radius: 50%;
   margin-top: 4px;
 }
 
-/* Scrollbar styling */
+/* XP Scrollbar */
 .notifications-page-content::-webkit-scrollbar {
-  width: 8px;
+  width: 16px;
 }
 
 .notifications-page-content::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #f0f0f0;
+  border-left: 1px solid #d9d9d9;
 }
 
 .notifications-page-content::-webkit-scrollbar-thumb {
   background: #c1c1c1;
-  border-radius: 4px;
+  border: 1px solid #7f9db9;
+  border-radius: 0;
 }
 
 .notifications-page-content::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
+}
+
+.notifications-page-content::-webkit-scrollbar-button {
+  background: #f0f0f0;
+  border: 1px solid #7f9db9;
+  height: 16px;
 }

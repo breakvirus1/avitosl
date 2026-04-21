@@ -100,4 +100,20 @@ public class CommentService {
                 .orElseThrow(() -> new NotFoundException("Комментарий не найден"));
         return commentMapper.toResponse(comment);
     }
+
+    @Cacheable(value = "allComments", key = "'all'")
+    @Transactional(readOnly = true)
+    public List<CommentResponse> getAllComments() {
+        List<Comment> comments = commentRepository.findAll();
+        // Инициализируем lazy-поля для каждого комментария
+        comments.forEach(comment -> {
+            if (comment.getAuthor() != null) {
+                comment.getAuthor().getId();
+            }
+            if (comment.getPost() != null) {
+                comment.getPost().getId();
+            }
+        });
+        return commentMapper.toResponseList(comments);
+    }
 }

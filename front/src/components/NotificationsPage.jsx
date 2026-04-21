@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import AuthBar from './AuthBar';
 import './Notifications.css';
 
 function NotificationsPage() {
@@ -18,8 +19,41 @@ function NotificationsPage() {
     try {
       setLoading(true);
       const response = await apiService.getUnreadMessages();
-      const notificationsData = response.data?.content || response.data || [];
-      setNotifications(Array.isArray(notificationsData) ? notificationsData : []);
+      const messages = response.data || [];
+      
+      // Transform chat messages into notification format with sender details
+      const notificationsWithSender = await Promise.all(
+        messages.map(async (msg) => {
+          try {
+            const sender = await apiService.getUserByKeycloakId(msg.senderKeycloakId);
+            return {
+              id: msg.id,
+              type: 'chat',
+              message: msg.message,
+              createdAt: msg.createdAt,
+              read: msg.isRead,
+              senderId: msg.senderKeycloakId,
+              senderFirstName: sender.data?.firstName || 'Пользователь',
+              senderLastName: sender.data?.lastName || '',
+              postId: null
+            };
+          } catch (err) {
+            return {
+              id: msg.id,
+              type: 'chat',
+              message: msg.message,
+              createdAt: msg.createdAt,
+              read: msg.isRead,
+              senderId: msg.senderKeycloakId,
+              senderFirstName: 'Пользователь',
+              senderLastName: '',
+              postId: null
+            };
+          }
+        })
+      );
+      
+      setNotifications(notificationsWithSender);
       setError(null);
     } catch (err) {
       console.error('Error fetching notifications:', err);
@@ -41,12 +75,13 @@ function NotificationsPage() {
       } else {
         navigate('/');
       }
-      // Store chat data to open chat after navigation
-      sessionStorage.setItem('pendingChat', JSON.stringify({
-        receiverId: notification.senderId,
-        receiverName: notification.senderFirstName,
-        postId: notification.postId
-      }));
+      // Store chat data to open chat after navigation (only for chat messages)
+      if (notification.type === 'chat') {
+        sessionStorage.setItem('pendingChat', JSON.stringify({
+          receiverId: notification.senderId,
+          receiverName: notification.senderFirstName
+        }));
+      }
     } catch (err) {
       console.error('Error marking notification as read:', err);
     }
@@ -83,7 +118,9 @@ function NotificationsPage() {
 
   return (
     <div className="notifications-page">
-      <div className="notifications-page-container">
+      <div style={{ maxWidth: '800px', margin: '0 auto', width: '100%' }}>
+        <AuthBar />
+        <div className="notifications-page-container">
         <div className="notifications-page-header">
           <h1>Уведомления</h1>
           <button className="notifications-back-btn" onClick={() => navigate(-1)}>
@@ -125,6 +162,7 @@ function NotificationsPage() {
               ))}
             </ul>
           )}
+        </div>
         </div>
       </div>
     </div>

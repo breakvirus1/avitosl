@@ -1,24 +1,25 @@
-/* Windows XP Style CreatePostPage */
+/* Windows XP Luna Blue - CreatePostPage */
 .create-post-container {
   max-width: 800px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 10px;
 }
 
 .create-post-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   padding: 8px 12px;
-  background: #ece9d8;
+  background: linear-gradient(to bottom, #ece9d8 0%, #d9d9d9 100%);
   border: 1px solid #003c74;
   border-radius: 3px;
+  box-shadow: 1px 1px 0 #003c74;
 }
 
 .create-post-header h1 {
   margin: 0;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: bold;
   color: #000000;
   font-family: 'Tahoma', sans-serif;
@@ -26,10 +27,10 @@
 
 .create-post-form {
   background: #ffffff;
-  border: 1px solid #7f9db9;
+  border: 1px solid #003c74;
   border-radius: 3px;
   padding: 16px;
-  box-shadow: 1px 1px 0 #ece9d8;
+  box-shadow: 2px 2px 0 #003c74, 3px 3px 0 #1e3f6f;
 }
 
 .form-group {
@@ -56,7 +57,6 @@
   color: #000000;
   font-family: 'Tahoma', sans-serif;
   background: #ffffff;
-  transition: all 0.2s;
   box-sizing: border-box;
 }
 
@@ -87,6 +87,8 @@
   display: flex;
   gap: 12px;
   justify-content: flex-end;
+  padding-top: 12px;
+  border-top: 1px solid #d9d9d9;
 }
 
 .btn {
@@ -99,6 +101,7 @@
   cursor: pointer;
   transition: all 0.2s;
   text-align: center;
+  box-shadow: 1px 1px 0 #003c74;
 }
 
 .btn-primary {
@@ -116,6 +119,7 @@
   color: #999;
   border-color: #c0c0c0;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .btn-secondary {
@@ -138,123 +142,29 @@
   margin-bottom: 16px;
   font-size: 12px;
   font-family: 'Tahoma', sans-serif;
+  box-shadow: inset 1px 1px 0 #ffcccc;
 }
 
 .success-message {
   background: #e6ffed;
   border: 1px solid #52c41a;
-  color: #52c41a;
+  color: #28a745;
   padding: 10px;
   border-radius: 3px;
   margin-bottom: 16px;
   font-size: 12px;
   font-family: 'Tahoma', sans-serif;
+  box-shadow: inset 1px 1px 0 #d4edda;
 }
 
 /* Photos Section */
-.create-post-photos-section {
-  margin-top: 24px;
+.file-upload-section {
+  margin-top: 20px;
   padding: 16px;
   border: 1px solid #7f9db9;
   border-radius: 3px;
   background: #f9f9f9;
-}
-
-.create-post-photos-section h2 {
-  font-size: 14px;
-  font-weight: bold;
-  color: #000000;
-  margin: 0 0 8px 0;
-  font-family: 'Tahoma', sans-serif;
-}
-
-.help-text {
-  font-size: 11px;
-  color: #666666;
-  margin-bottom: 12px;
-  font-family: 'Tahoma', sans-serif;
-}
-
-.file-upload-section {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.upload-file-btn {
-  padding: 6px 12px;
-  border-radius: 3px;
-  border: 1px solid #7f9db9;
-  background: linear-gradient(to bottom, #f0f0f0 0%, #d9d9d9 100%);
-  color: #000000;
-  font-size: 12px;
-  font-family: 'Tahoma', sans-serif;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.upload-file-btn:hover:not(:disabled) {
-  background: linear-gradient(to bottom, #e5f3ff 0%, #cce8ff 100%);
-  border-color: #2b579a;
-}
-
-.upload-file-btn:disabled {
-  background: #ece9d8;
-  color: #999;
-  cursor: not-allowed;
-}
-
-.upload-hint {
-  font-size: 11px;
-  color: #999;
-  font-family: 'Tahoma', sans-serif;
-}
-
-.photos-preview {
-  margin-top: 16px;
-}
-
-.photos-preview h3 {
-  font-size: 12px;
-  font-weight: bold;
-  color: #000000;
-  margin: 0 0 8px 0;
-  font-family: 'Tahoma', sans-serif;
-}
-
-.photos-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 12px;
-}
-
-.photo-item {
-  position: relative;
-  aspect-ratio: 1;
-  border: 1px solid #7f9db9;
-  border-radius: 3px;
-  overflow: hidden;
-  background: #f0f0f0;
-}
-
-.photo-item img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.photo-preview-img {
-  display: block;
-}
-
-/* File Upload Section */
-.file-upload-section {
-  margin-top: 24px;
-  padding: 16px;
-  border: 1px solid #7f9db9;
-  border-radius: 3px;
-  background: #f9f9f9;
+  box-shadow: inset 1px 1px 0 #ffffff;
 }
 
 .file-upload-header {
@@ -290,13 +200,14 @@
 
 .file-input-btn {
   padding: 6px 12px;
-  background: linear-gradient(to bottom, #f0f0f0 0%, #d9d9d9 100%);
-  border: 1px solid #7f9db9;
   border-radius: 3px;
+  border: 1px solid #7f9db9;
+  background: linear-gradient(to bottom, #f0f0f0 0%, #d9d9d9 100%);
   color: #000000;
   font-size: 12px;
   font-family: 'Tahoma', sans-serif;
   cursor: pointer;
+  box-shadow: 1px 1px 0 #003c74;
 }
 
 .file-input-btn:hover {

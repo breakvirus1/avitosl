@@ -225,8 +225,8 @@
 
 .post-card-meta {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 4px;
   margin-top: auto;
 }
 
@@ -240,6 +240,12 @@
 .post-card-date {
   font-size: 10px;
   color: #8c8c8c;
+  font-family: 'Tahoma', sans-serif;
+}
+
+.post-card-author {
+  font-size: 10px;
+  color: #666666;
   font-family: 'Tahoma', sans-serif;
 }
 

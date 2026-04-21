@@ -36,6 +36,7 @@ public class Photo {
     private String url;
 
     @Column(name = "is_primary")
+    @Builder.Default
     private boolean primary = false;
 
     @ManyToOne(fetch = FetchType.LAZY)

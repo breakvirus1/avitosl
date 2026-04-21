@@ -1,0 +1,68 @@
+# Server configuration
+server:
+  port: 8081
+
+# Application info
+spring:
+  application:
+    name: user-service
+
+  # Database configuration
+  datasource:
+    url: jdbc:postgresql://postgres:5433/avito_user_db
+    username: user
+    password: 111111
+    driver-class-name: org.postgresql.Driver
+
+  # JPA/Hibernate configuration
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+  # Disable Flyway completely
+  flyway:
+    enabled: false
+
+  # Eureka client configuration
+  cloud:
+    compatibility-verifier:
+      enabled: false
+
+  # Allow circular references
+  main:
+    allow-circular-references: true
+
+# Eureka client configuration
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://eureka-server:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+# Logging
+logging:
+  level:
+    com.avitosl.userservice: DEBUG
+    feign: DEBUG
+
+# OpenAPI/Swagger
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+
+# Keycloak configuration
+keycloak:
+  auth-server-url: http://avitosl-keycloak:8080
+  realm: avitorealm
+  resource: avitofrontend
+  public-client: true
+  bearer-only: true

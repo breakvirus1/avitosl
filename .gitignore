@@ -1,0 +1,85 @@
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+*.iml
+*.ipr
+*.iws
+.java-version
+.gradle/
+build/
+out/
+.idea/
+
+# Node.js
+node_modules/
+dist/
+build/
+.cache/
+.env.local
+.env.*.local
+.DS_Store
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+.kilo
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Project specific
+back/avito/target/
+back/microservices/*/target/
+front/dist/
+front/node_modules/
+ front/.vite/
+front/.cache/
+BOOT-INF/
+*.exec
+*.properties
+.vscode/
+restart-services.sh
+!realm-export.json
+docker/collected-packages/
+
+# Docker volumes (local)
+postgres_data/
+keycloak_db_data/
+
+# Test reports
+*.xml
+!.gitignore

@@ -1,20 +1,28 @@
 import { useState, useEffect } from 'react';
+<<<<<<< HEAD
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+=======
+import { useNavigate } from 'react-router-dom';
+>>>>>>> kafka
 import Chat from './Chat';
 import './PostView.css';
 
-function PostView() {
-  const { id } = useParams();
+function PostViewBuyer({ post, user, comments, onCreateComment, onUpdateComment, onDeleteComment, onPurchasePost }) {
   const navigate = useNavigate();
+<<<<<<< HEAD
   const { isAuthenticated, apiService, user } = useAuth();
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+=======
+  const isAuthenticated = !!user;
+>>>>>>> kafka
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showChat, setShowChat] = useState(false);
   const [chatReceiverId, setChatReceiverId] = useState(null);
   const [chatReceiverName, setChatReceiverName] = useState('');
+<<<<<<< HEAD
   
   // Комментарии
   const [comments, setComments] = useState([]);
@@ -29,11 +37,16 @@ function PostView() {
       fetchComments();
     }
   }, [isAuthenticated, id]);
+=======
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [editingText, setEditingText] = useState('');
+  const [commentText, setCommentText] = useState('');
+>>>>>>> kafka
 
   // Check for pending chat from notification click
   useEffect(() => {
     const pendingChat = sessionStorage.getItem('pendingChat');
-    if (pendingChat && isAuthenticated) {
+    if (pendingChat && user) {
       try {
         const { receiverId, receiverName } = JSON.parse(pendingChat);
         if (receiverId && receiverName) {
@@ -47,22 +60,22 @@ function PostView() {
         sessionStorage.removeItem('pendingChat');
       }
     }
-  }, [isAuthenticated]);
+  }, [user]);
 
-  const fetchPost = async () => {
+  const handleCreateComment = async (e) => {
+    e.preventDefault();
+    if (!commentText.trim()) return;
+
     try {
-      setLoading(true);
-      const response = await apiService.getPost(id);
-      setPost(response.data);
-      setError(null);
+      await onCreateComment({ content: commentText.trim(), postId: post.id });
+      setCommentText('');
     } catch (err) {
-      console.error('Error fetching post:', err);
-      setError(err.response?.data?.message || err.message || 'Failed to load post');
-    } finally {
-      setLoading(false);
+      console.error('Error creating comment:', err);
+      alert(err.response?.data?.message || 'Ошибка при создании комментария');
     }
   };
 
+<<<<<<< HEAD
   const fetchComments = async () => {
     try {
       setLoadingComments(true);
@@ -138,17 +151,53 @@ function PostView() {
   };
 
   const handleDeletePost = async () => {
+=======
+  const handleUpdateComment = async (commentId) => {
+    if (!editingText.trim()) return;
+
+>>>>>>> kafka
     try {
-      await apiService.deletePost(id);
-      navigate('/');
+      await onUpdateComment(commentId, { content: editingText.trim(), postId: post.id });
+      setEditingCommentId(null);
+      setEditingText('');
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Failed to delete post');
+      console.error('Error updating comment:', err);
+      alert(err.response?.data?.message || 'Ошибка при обновлении комментария');
     }
   };
 
+  const handleDeleteComment = async (commentId) => {
+    if (!window.confirm('Вы уверены, что хотите удалить этот комментарий?')) {
+      return;
+    }
+
+    try {
+      await onDeleteComment(commentId);
+    } catch (err) {
+      console.error('Error deleting comment:', err);
+      alert(err.response?.data?.message || 'Ошибка при удалении комментария');
+    }
+  };
+
+  const startEditing = (comment) => {
+    setEditingCommentId(comment.id);
+    setEditingText(comment.content);
+  };
+
+  const cancelEditing = () => {
+    setEditingCommentId(null);
+    setEditingText('');
+  };
+
+  const isCommentOwner = (comment) => {
+    return comment.userId === user?.id;
+  };
+
+  const isOwner = post.author?.id === user?.id || post.author?.keycloakId === user?.sub;
+
   const handleOpenChat = () => {
-    if (post?.author?.id) {
-      setChatReceiverId(post.author.id);
+    if (post?.author?.keycloakId) {
+      setChatReceiverId(post.author.keycloakId);
       setChatReceiverName(post.author.firstName || 'Продавец');
       setShowChat(true);
     }
@@ -177,7 +226,7 @@ function PostView() {
   };
 
   const getPhotoUrl = (photoId) => {
-    return `http://localhost:8081/api/photos/${photoId}/file`;
+    return `/api/photos/${photoId}/file`;
   };
 
   const handleNextImage = (e) => {
@@ -201,10 +250,10 @@ function PostView() {
     setCurrentImageIndex(index);
   };
 
-  // Автоматическая смена изображений каждые 3 секунды
+  // Automatic image slider every 3 seconds
   useEffect(() => {
     if (!post || !post.photos || post.photos.length <= 1) return;
-    
+
     const interval = setInterval(() => {
       setCurrentImageIndex(prev =>
         prev === post.photos.length - 1 ? 0 : prev + 1
@@ -214,49 +263,21 @@ function PostView() {
     return () => clearInterval(interval);
   }, [post]);
 
-  if (loading) {
-    return (
-      <div className="post-view-loading">
-        <div className="post-view-spinner"></div>
-        <p>Загрузка объявления...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="post-view-error">
-        <strong>Ошибка</strong>
-        <p>{error}</p>
-        <button onClick={() => navigate('/')} className="post-view-back-btn">
-          Назад к объявлениям
-        </button>
-      </div>
-    );
-  }
-
-  if (!post) {
-    return (
-      <div className="post-view-not-found">
-        <p>Объявление не найдено</p>
-        <button onClick={() => navigate('/')} className="post-view-back-btn">
-          Назад к объявлениям
-        </button>
-      </div>
-    );
-  }
-
-  const isOwner = post.author?.id === user?.id || post.author?.keycloakId === user?.sub;
-
   const photos = post.photos || [];
   const currentIndex = currentImageIndex;
   const currentPhoto = photos[currentIndex];
   const photoUrl = currentPhoto ? getPhotoUrl(currentPhoto.id) : null;
 
+<<<<<<< HEAD
   // Рендер поста
   const renderPost = () => (
     <>
       <button onClick={() => navigate('/')} className="post-view-back">
+=======
+  const renderPost = () => (
+    <>
+      <button onClick={() => navigate(-1)} className="post-view-back">
+>>>>>>> kafka
         ← Назад к списку
       </button>
 
@@ -328,7 +349,7 @@ function PostView() {
               {formatPrice(post.price)}
             </div>
             <div className="post-view-status">
-              {post.active ? (
+              {post.isActive ? (
                 <span className="post-view-status-active">Активно</span>
               ) : (
                 <span className="post-view-status-inactive">Неактивно</span>
@@ -351,28 +372,22 @@ function PostView() {
           </div>
 
           <div className="post-view-actions">
-            <button
-              className="post-view-contact-btn"
-              onClick={handleOpenChat}
-            >
-              Написать продавцу
-            </button>
-            {isOwner && (
-              <>
-                <button 
-                  className="post-view-edit-btn"
-                  onClick={() => navigate(`/edit-post/${post.id}`)}
-                >
-                  Редактировать
-                </button>
-                <button 
-                  className="post-view-delete-btn"
-                  onClick={handleDeletePost}
-                >
-                  Удалить
-                </button>
-              </>
+            {!isOwner && (
+              <button
+                className="post-view-contact-btn"
+                onClick={handleOpenChat}
+              >
+                Написать продавцу
+              </button>
             )}
+            {!isOwner && post.isActive && (
+                <button
+                  className="post-view-purchase-btn"
+                  onClick={onPurchasePost}
+                >
+                  Купить
+                </button>
+              )}
           </div>
 
           <div className="post-view-dates">
@@ -386,6 +401,7 @@ function PostView() {
     </>
   );
 
+<<<<<<< HEAD
   // Рендер секции комментариев
   const renderComments = () => (
     <div className="post-view-comments-section">
@@ -498,6 +514,117 @@ function PostView() {
 
   return (
     <div className="post-view-wrapper">
+=======
+  const renderComments = () => {
+    const renderComment = (comment) => (
+      <div key={comment.id} className="post-view-comment-item">
+        <div className="post-view-comment-header">
+          <div className="post-view-comment-author">
+            <span className="post-view-comment-author-name">
+              {comment.authorFirstName || 'Пользователь'} {comment.authorLastName || ''}
+            </span>
+            <span className="post-view-comment-date">
+              {formatDate(comment.createdAt)}
+            </span>
+            {comment.updatedAt && comment.updatedAt !== comment.createdAt && (
+              <span className="post-view-comment-edited">(отредактировано)</span>
+            )}
+          </div>
+
+          {isCommentOwner(comment) && (
+            <div className="post-view-comment-actions">
+              {editingCommentId === comment.id ? (
+                <>
+                  <button
+                    onClick={() => handleUpdateComment(comment.id)}
+                    className="post-view-comment-save-btn"
+                  >
+                    Сохранить
+                  </button>
+                  <button
+                    type="button"
+                    onClick={cancelEditing}
+                    className="post-view-comment-cancel-btn"
+                  >
+                    Отмена
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => startEditing(comment)}
+                    className="post-view-comment-edit-btn"
+                  >
+                    Редактировать
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteComment(comment.id)}
+                    className="post-view-comment-delete-btn"
+                  >
+                    Удалить
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="post-view-comment-content">
+          {editingCommentId === comment.id ? (
+            <textarea
+              value={editingText}
+              onChange={(e) => setEditingText(e.target.value)}
+              className="post-view-comment-edit-textarea"
+              rows="3"
+              maxLength="2000"
+            />
+          ) : (
+            <p>{comment.content}</p>
+          )}
+        </div>
+      </div>
+    );
+
+    return (
+      <div className="post-view-comments-section">
+        <div className="post-view-comments-header">
+          <h3>Комментарии ({comments.length})</h3>
+        </div>
+
+        {isAuthenticated ? (
+          <form onSubmit={handleCreateComment} className="post-view-comment-form">
+            <textarea
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              placeholder="Напишите комментарий..."
+              className="post-view-comment-input"
+              rows="3"
+              maxLength="2000"
+            />
+            <div className="post-view-comment-form-actions">
+              <button type="submit" className="post-view-comment-submit">
+                Отправить
+              </button>
+            </div>
+          </form>
+        ) : (
+          <div className="post-view-comments-login-prompt">
+            <p>Чтобы оставить комментарий, необходимо <button onClick={() => navigate('/')} className="post-view-login-link">войти</button> в систему</p>
+          </div>
+        )}
+
+        <div className="post-view-comments-list">
+          {comments.map(renderComment)}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <>
+>>>>>>> kafka
       {renderPost()}
       {renderComments()}
       {showChat && (
@@ -508,8 +635,13 @@ function PostView() {
           onClose={handleCloseChat}
         />
       )}
+<<<<<<< HEAD
     </div>
+=======
+    </>
+>>>>>>> kafka
   );
 }
 
-export default PostView;
+export default PostViewBuyer;
+

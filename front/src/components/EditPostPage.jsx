@@ -1,12 +1,13 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import AuthBar from './AuthBar';
 import './CreatePostPage.css';
 
 function EditPostPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated, apiService } = useAuth();
+  const { isAuthenticated, apiService, user } = useAuth();
   const fileInputRef = useRef(null);
   
   const [post, setPost] = useState(null);
@@ -19,13 +20,14 @@ function EditPostPage() {
   const [uploadingFile, setUploadingFile] = useState(null);
   const [photos, setPhotos] = useState([]);
 
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    price: '',
-    categoryId: '',
-    subcategoryId: ''
-  });
+   const [formData, setFormData] = useState({
+     title: '',
+     description: '',
+     price: '',
+     categoryId: '',
+     subcategoryId: '',
+     active: false
+   });
 
   useEffect(() => {
     if (isAuthenticated && id) {
@@ -41,13 +43,14 @@ function EditPostPage() {
       const response = await apiService.getPost(id);
       const postData = response.data;
       setPost(postData);
-      setFormData({
-        title: postData.title,
-        description: postData.description || '',
-        price: postData.price?.toString() || '',
-        categoryId: postData.category?.id?.toString() || '',
-        subcategoryId: postData.subcategory?.id?.toString() || ''
-      });
+        setFormData({
+          title: postData.title,
+          description: postData.description || '',
+          price: postData.price?.toString() || '',
+          categoryId: postData.category?.id?.toString() || '',
+          subcategoryId: postData.subcategory?.id?.toString() || '',
+          active: postData.isActive
+        });
       setError(null);
     } catch (err) {
       console.error('Error fetching post:', err);
@@ -109,13 +112,15 @@ function EditPostPage() {
 
     try {
       setSubmitting(true);
-      const postData = {
-        title: formData.title.trim(),
-        description: formData.description || '',
-        price: formData.price ? parseFloat(formData.price) : null,
-        categoryId: parseInt(formData.categoryId),
-        subcategoryId: parseInt(formData.subcategoryId)
-      };
+       const postData = {
+         title: formData.title.trim(),
+         description: formData.description || '',
+         price: formData.price ? parseFloat(formData.price) : null,
+         categoryId: parseInt(formData.categoryId),
+         subcategoryId: parseInt(formData.subcategoryId),
+         isActive: formData.active,
+         keycloakId: user?.keycloakId || user?.sub
+       };
 
       await apiService.updatePost(id, postData);
       setSuccess(true);
@@ -218,7 +223,9 @@ function EditPostPage() {
 
   return (
     <div className="create-post-container">
-      <div className="create-post-header">
+      <div style={{ maxWidth: '800px', margin: '0 auto', width: '100%' }}>
+        <AuthBar />
+        <div className="create-post-header">
         <h1>Редактировать объявление</h1>
         <button
           className="cancel-btn"
@@ -321,6 +328,21 @@ function EditPostPage() {
               </select>
             </div>
 
+            <div className="form-group">
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  id="active"
+                  name="active"
+                  checked={formData.active}
+                  onChange={(e) => setFormData(prev => ({ ...prev, active: e.target.checked }))}
+                  disabled={submitting}
+                  style={{ width: 'auto', margin: 0 }}
+                />
+                Активно
+              </label>
+            </div>
+
             <div className="form-actions">
               <button type="submit" className="submit-btn" disabled={submitting}>
                 {submitting ? 'Сохранение...' : 'Сохранить изменения'}
@@ -363,7 +385,7 @@ function EditPostPage() {
               {photos.map((photo) => (
                 <div key={photo.id} className="photo-item">
                   <img
-                    src={`http://localhost:8081/api/photos/${photo.id}/file`}
+                    src={`/api/photos/${photo.id}/file`}
                     alt="Фото"
                     className="photo-preview"
                   />
@@ -380,6 +402,7 @@ function EditPostPage() {
           ) : (
             <p className="no-photos">Нет загруженных фотографий</p>
           )}
+        </div>
         </div>
       </div>
     </div>

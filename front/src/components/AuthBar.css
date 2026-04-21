@@ -1,87 +1,62 @@
-/* Windows XP Style AuthBar */
+/* Windows XP Luna Blue - AuthBar */
 .auth-bar {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 12px;
-  padding: 8px 12px;
-  background: #ece9d8;
+  gap: 8px;
+  padding: 6px 12px;
+  background: linear-gradient(to bottom, #ece9d8 0%, #d9d9d9 100%);
   border: 1px solid #003c74;
   border-radius: 3px;
-  margin-bottom: 16px;
+  margin: 0 auto 12px auto;
   max-width: 1200px;
-  margin: 0 auto;
-  padding-left: 10px;
-  padding-right: 10px;
-}
-
-.auth-bar-username-btn {
-  font-size: 12px;
-  color: #000000;
+  box-shadow: 1px 1px 0 #003c74;
   font-family: 'Tahoma', sans-serif;
-  background: transparent;
-  border: 1px solid transparent;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 3px;
-  transition: all 0.2s;
 }
 
-.auth-bar-username-btn:hover {
-  background: linear-gradient(to bottom, #e5f3ff 0%, #cce8ff 100%);
-  border-color: #2b579a;
-  color: #2b579a;
-}
-
-.auth-bar-create-btn {
-  padding: 6px 12px;
+.auth-bar button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 26px;
+  min-width: 24px;
+  padding: 2px 10px;
+  font-size: 12px;
+  line-height: 1;
   border-radius: 3px;
   border: 1px solid #003c74;
-  font-size: 12px;
-  font-weight: normal;
-  font-family: 'Tahoma', sans-serif;
   cursor: pointer;
-  transition: all 0.2s;
-  background: linear-gradient(to bottom, #2b579a 0%, #1e3f6f 100%);
-  color: white;
-}
-
-.auth-bar-create-btn:hover {
-  background: linear-gradient(to bottom, #1e3f6f 0%, #2b579a 100%);
-}
-
-.auth-bar-btn {
-  padding: 6px 12px;
-  border-radius: 3px;
-  border: 1px solid #7f9db9;
-  font-size: 12px;
-  font-weight: normal;
+  transition: all 0.1s;
   font-family: 'Tahoma', sans-serif;
-  cursor: pointer;
-  transition: all 0.2s;
+  box-sizing: border-box;
   background: linear-gradient(to bottom, #f0f0f0 0%, #d9d9d9 100%);
   color: #000000;
+  box-shadow: 1px 1px 0 #003c74;
 }
 
-.auth-bar-btn:hover {
+.auth-bar button:hover {
   background: linear-gradient(to bottom, #e5f3ff 0%, #cce8ff 100%);
   border-color: #2b579a;
 }
 
+.auth-bar button:active {
+  background: linear-gradient(to bottom, #d9d9d9 0%, #f0f0f0 100%);
+  box-shadow: inset 1px 1px 0 #003c74;
+}
+
+/* Login button - blue */
 .auth-bar-btn-login {
   background: linear-gradient(to bottom, #2b579a 0%, #1e3f6f 100%);
   color: white;
-  border: 1px solid #003c74;
 }
 
 .auth-bar-btn-login:hover {
   background: linear-gradient(to bottom, #1e3f6f 0%, #2b579a 100%);
 }
 
+/* Logout button */
 .auth-bar-btn-logout {
-  background: linear-gradient(to bottom, #f0f0f0 0%, #d9d9d9 100%);
   color: #000000;
-  border: 1px solid #7f9db9;
 }
 
 .auth-bar-btn-logout:hover {
@@ -90,38 +65,103 @@
   color: #e60012;
 }
 
+/* Home & Create buttons - blue */
+.auth-bar-home-btn,
+.auth-bar-create-btn {
+  background: linear-gradient(to bottom, #2b579a 0%, #1e3f6f 100%);
+  color: white;
+}
+
+.auth-bar-home-btn:hover,
+.auth-bar-create-btn:hover {
+  background: linear-gradient(to bottom, #1e3f6f 0%, #2b579a 100%);
+}
+
+/* Notification button */
 .auth-bar-notification-btn {
-  position: relative;
-  padding: 6px 12px;
-  border-radius: 3px;
-  border: 1px solid #7f9db9;
+  padding: 2px 8px;
   font-size: 16px;
-  cursor: pointer;
-  transition: all 0.2s;
-  background: linear-gradient(to bottom, #f0f0f0 0%, #d9d9d9 100%);
   color: #000000;
+  position: relative;
+  background: linear-gradient(to bottom, #f0f0f0 0%, #d9d9d9 100%);
 }
 
 .auth-bar-notification-btn:hover {
   background: linear-gradient(to bottom, #e5f3ff 0%, #cce8ff 100%);
-  border-color: #2b579a;
 }
 
+/* Notification badge */
 .auth-bar-notification-count {
   position: absolute;
   top: -6px;
   right: -6px;
-  background-color: #d32f2f;
+  background: #e60012;
   color: white;
   font-size: 10px;
   font-weight: bold;
-  min-width: 18px;
-  height: 18px;
-  border-radius: 9px;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0 4px;
   border: 2px solid #ece9d8;
   font-family: 'Tahoma', sans-serif;
+}
+
+/* Admin panel - classic gray */
+.auth-bar-admin-btn {
+  background: linear-gradient(to bottom, #f0f0f0 0%, #d9d9d9 100%);
+  color: #000000;
+}
+
+.auth-bar-admin-btn:hover {
+  background: linear-gradient(to bottom, #e5f3ff 0%, #cce8ff 100%);
+}
+
+/* User section */
+.auth-bar-user-section {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.auth-bar-username-btn {
+  font-size: 12px;
+  color: #000000;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 3px;
+  transition: all 0.2s;
+  font-family: 'Tahoma', sans-serif;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  box-shadow: none;
+}
+
+.auth-bar-username-btn:hover {
+  background: linear-gradient(to bottom, #e5f3ff 0%, #cce8ff 100%);
+  border-color: #0078d7;
+  color: #0078d7;
+  box-shadow: none;
+}
+
+.auth-bar-roles {
+  font-size: 10px;
+  color: #666666;
+  font-family: 'Tahoma', sans-serif;
+  line-height: 1;
+  margin-top: 2px;
+}
+
+/* Divider */
+.auth-bar-divider {
+  width: 1px;
+  height: 16px;
+  background: linear-gradient(to bottom, transparent 0%, #7f9db9 20%, #7f9db9 80%, transparent 100%);
+  margin: 0 4px;
 }
