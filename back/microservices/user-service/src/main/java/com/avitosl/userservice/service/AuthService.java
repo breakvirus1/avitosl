@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashSet;
@@ -18,6 +19,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.Keys;
 
 @Service
 @RequiredArgsConstructor
@@ -102,18 +104,20 @@ public class AuthService {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
 
+        byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
         return Jwts.builder()
                 .setSubject(username)
                 .claim("userId", userId)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
-                .signWith(SignatureAlgorithm.HS512, jwtSecret)
+                .signWith(SignatureAlgorithm.HS256, keyBytes)
                 .compact();
     }
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token);
+            byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
+            Jwts.parser().setSigningKey(keyBytes).parseClaimsJws(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
             return false;
@@ -121,8 +125,9 @@ public class AuthService {
     }
 
     public String getUsernameFromToken(String token) {
+        byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
         Claims claims = Jwts.parser()
-                .setSigningKey(jwtSecret)
+                .setSigningKey(keyBytes)
                 .parseClaimsJws(token)
                 .getBody();
 
@@ -130,8 +135,9 @@ public class AuthService {
     }
 
     public Long getUserIdFromToken(String token) {
+        byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
         Claims claims = Jwts.parser()
-                .setSigningKey(jwtSecret)
+                .setSigningKey(keyBytes)
                 .parseClaimsJws(token)
                 .getBody();
 
