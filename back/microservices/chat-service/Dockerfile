@@ -5,7 +5,7 @@ WORKDIR /app
 COPY microservices/chat-service/pom.xml pom.xml
 COPY microservices/chat-service/src src
 
-RUN mvn clean package -DskipTests
+RUN mvn clean package -DskipTests -Dmaven.test.skip=true -Dmaven.wagon.http.retryHandler.count=5 -Dmaven.wagon.http.retryHandler.requestSentEnabled=true -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Dhttp.keepAlive=false -Dmaven.wagon.http.timeout=180000
 
 # Runtime stage
 FROM eclipse-temurin:21-jre-alpine

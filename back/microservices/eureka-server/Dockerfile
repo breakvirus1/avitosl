@@ -5,7 +5,7 @@ WORKDIR /app
 COPY microservices/eureka-server/pom.xml pom.xml
 COPY microservices/eureka-server/src src
 
-RUN mvn clean package -DskipTests
+RUN mvn clean package -DskipTests -Dmaven.test.skip=true -Dmaven.wagon.http.retryHandler.count=5 -Dmaven.wagon.http.retryHandler.requestSentEnabled=true -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Dhttp.keepAlive=false -Dmaven.wagon.http.timeout=180000
 
 # Runtime stage
 FROM eclipse-temurin:21-jre-alpine

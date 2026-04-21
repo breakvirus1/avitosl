@@ -81,5 +81,4 @@ postgres_data/
 keycloak_db_data/
 
 # Test reports
-*.xml
 !.gitignore
