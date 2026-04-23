@@ -1,6 +1,8 @@
 # Server configuration
 server:
   port: 8085
+  error:
+    include-message: always
 
 # Application info
 spring:

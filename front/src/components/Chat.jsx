@@ -55,9 +55,29 @@ function Chat({ receiverId, receiverName, postId, onClose }) {
         setMessages(fetchedMessages);
         setLoading(false);
       }
+      
+      // Отмечаем все сообщения от этого отправителя как прочитанные
+      if (currentUserKeycloakId && receiverId && fetchedMessages.length > 0) {
+        try {
+          const unreadMessages = fetchedMessages.filter(msg => !msg.isRead && msg.senderKeycloakId === receiverId);
+          for (const msg of unreadMessages) {
+            await apiService.markAsRead(msg.id);
+          }
+          if (fetchUnreadCount) {
+            await fetchUnreadCount();
+          }
+        } catch (markReadErr) {
+          console.error('Error marking messages as read:', markReadErr);
+        }
+      }
+      
+      setError(null);
     } catch (err) {
       console.error('Error fetching messages:', err);
-      setError('Не удалось загрузить сообщения');
+      setError(err.response?.data?.message || 'Не удалось загрузить сообщения');
+      if (!isPolling) {
+        setLoading(false);
+      }
     }
   };
 
@@ -65,78 +85,116 @@ function Chat({ receiverId, receiverName, postId, onClose }) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const sendMessage = async (e) => {
+  const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!newMessage.trim() || !receiverId || !currentUserKeycloakId) return;
-
-    setSending(true);
-    setError(null);
+    if (!newMessage.trim() || sending) return;
 
     try {
-      await apiService.sendMessage({
-        senderId: currentUserKeycloakId,
-        receiverId: receiverId,
-        content: newMessage.trim(),
-        postId: postId
-      });
+      setSending(true);
+      const messageData = {
+        receiverKeycloakId: receiverId,
+        message: newMessage.trim()
+      };
+
+      const response = await apiService.sendMessage(messageData);
+      setMessages(prev => [...prev, response.data]);
       setNewMessage('');
-      fetchMessages();
-      fetchUnreadCount();
+      setError(null);
     } catch (err) {
       console.error('Error sending message:', err);
-      setError('Не удалось отправить сообщение');
+      setError(err.response?.data?.message || 'Не удалось отправить сообщение');
     } finally {
       setSending(false);
     }
   };
 
-  if (!receiverId || !currentUserKeycloakId) {
-    return (
-      <div className="chat-container">
-        <div className="chat-error">Необходимо выбрать получателя</div>
-      </div>
-    );
-  }
+  const formatTime = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('ru-RU', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    if (date.toDateString() === today.toDateString()) {
+      return `Сегодня, ${formatTime(dateString)}`;
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return `Вчера, ${formatTime(dateString)}`;
+    } else {
+      return date.toLocaleDateString('ru-RU', {
+        day: 'numeric',
+        month: 'long',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+  };
+
+  const isMyMessage = (message) => {
+    return message.senderKeycloakId === currentUserKeycloakId;
+  };
 
   return (
-    <div className="chat-container">
-      <div className="chat-header">
-        <h3>{receiverName || 'Чат'}</h3>
-        <button className="close-btn" onClick={onClose}>&times;</button>
-      </div>
+    <div className="chat-overlay" onClick={onClose}>
+      <div className="chat-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="chat-header">
+          <h3>Чат с {receiverName || 'пользователем'}</h3>
+          <button className="chat-close-btn" onClick={onClose}>×</button>
+        </div>
 
-      <div className="chat-messages">
-        {loading ? (
-          <div className="chat-loading">Загрузка сообщений...</div>
-        ) : error ? (
-          <div className="chat-error">{error}</div>
-        ) : messages.length === 0 ? (
-          <div className="chat-empty">Нет сообщений</div>
-        ) : (
-          messages.map((msg) => (
-            <div key={msg.id} className={`chat-message ${msg.senderId === currentUserKeycloakId ? 'own' : 'other'}`}>
-              <div className="message-content">{msg.content}</div>
-              <div className="message-time">
-                {new Date(msg.createdAt).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
+        <div className="chat-messages">
+          {loading && (
+            <div className="chat-loading">Загрузка сообщений...</div>
+          )}
+
+          {error && !loading && (
+            <div className="chat-error">{error}</div>
+          )}
+
+          {!loading && messages.length === 0 && (
+            <div className="chat-empty">Нет сообщений. Начните диалог!</div>
+          )}
+
+          {!loading && messages.map((message) => (
+            <div
+              key={message.id}
+              className={`chat-message ${isMyMessage(message) ? 'chat-message-sent' : 'chat-message-received'}`}
+            >
+              <div className="chat-message-content">
+                <div className="chat-message-text">{message.message}</div>
+                <div className="chat-message-time">{formatDate(message.createdAt)}</div>
               </div>
             </div>
-          ))
-        )}
-        <div ref={messagesEndRef} />
-      </div>
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
 
-      <form className="chat-input-form" onSubmit={sendMessage}>
-        <input
-          type="text"
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Введите сообщение..."
-          disabled={sending}
-        />
-        <button type="submit" disabled={sending || !newMessage.trim()}>
-          {sending ? '...' : 'Отправить'}
-        </button>
-      </form>
+        <form className="chat-input-form" onSubmit={handleSendMessage}>
+          <input
+            type="text"
+            className="chat-input"
+            placeholder="Введите сообщение..."
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            disabled={sending}
+          />
+          <button
+            type="submit"
+            className="chat-send-btn"
+            disabled={sending || !newMessage.trim()}
+          >
+            {sending ? '...' : 'Отправить'}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

@@ -382,7 +382,6 @@ function PostViewByAuthor({ post, user, comments, onCreateComment, onUpdateComme
         <Chat
           receiverId={chatReceiverId}
           receiverName={chatReceiverName}
-          postId={post?.id}
           onClose={handleCloseChat}
         />
       )}

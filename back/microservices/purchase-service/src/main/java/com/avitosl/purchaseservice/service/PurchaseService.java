@@ -165,7 +165,7 @@ public class PurchaseService {
         if (price == null) price = 0.0;
 
         if (buyerBalance < price) {
-            throw new ConflictException("Insufficient funds in wallet");
+            throw new ConflictException("не хватает средств");
         }
 
         // Deduct from buyer

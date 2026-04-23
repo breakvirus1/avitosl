@@ -313,7 +313,6 @@ function PostViewBuyer({ post, user, comments, onCreateComment, onUpdateComment,
         <Chat
           receiverId={chatReceiverId}
           receiverName={chatReceiverName}
-          postId={post.id}
           onClose={handleCloseChat}
         />
       )}
@@ -439,7 +438,6 @@ function PostViewBuyer({ post, user, comments, onCreateComment, onUpdateComment,
         <Chat
           receiverId={chatReceiverId}
           receiverName={chatReceiverName}
-          postId={post.id}
           onClose={handleCloseChat}
         />
       )}
