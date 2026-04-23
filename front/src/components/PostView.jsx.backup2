@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Chat from './Chat';
 import './PostView.css';
 
-function PostViewBuyer({ post, user, comments, onCreateComment, onUpdateComment, onDeleteComment, onPurchasePost, login }) {
+function PostViewBuyer({ post, user, comments, onCreateComment, onUpdateComment, onDeleteComment, onPurchasePost }) {
   const navigate = useNavigate();
   const isAuthenticated = !!user;
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -320,131 +320,31 @@ function PostViewBuyer({ post, user, comments, onCreateComment, onUpdateComment,
     </>
   );
 
-
-  const renderComments = () => {
-    const renderComment = (comment) => (
-      <div key={comment.id} className="post-view-comment-item">
-        <div className="post-view-comment-header">
-          <div className="post-view-comment-author">
-            <span className="post-view-comment-author-name">
-              {comment.authorFirstName || 'Пользователь'} {comment.authorLastName || ''}
-            </span>
-            <span className="post-view-comment-date">
-              {formatDate(comment.createdAt)}
-            </span>
-            {comment.updatedAt && comment.updatedAt !== comment.createdAt && (
-              <span className="post-view-comment-edited">(отредактировано)</span>
-            )}
-          </div>
-
-          {isCommentOwner(comment) && (
-            <div className="post-view-comment-actions">
-              {editingCommentId === comment.id ? (
-                <>
-                  <button
-                    onClick={() => handleUpdateComment(comment.id)}
-                    className="post-view-comment-save-btn"
-                  >
-                    Сохранить
-                  </button>
-                  <button
-                    type="button"
-                    onClick={cancelEditing}
-                    className="post-view-comment-cancel-btn"
-                  >
-                    Отмена
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => startEditing(comment)}
-                    className="post-view-comment-edit-btn"
-                  >
-                    Редактировать
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteComment(comment.id)}
-                    className="post-view-comment-delete-btn"
-                  >
-                    Удалить
-                  </button>
-                </>
-              )}
-            </div>
-          )}
-        </div>
-
-        <div className="post-view-comment-content">
-          {editingCommentId === comment.id ? (
-            <textarea
-              value={editingText}
-              onChange={(e) => setEditingText(e.target.value)}
-              className="post-view-comment-edit-textarea"
-              rows="3"
-              maxLength="2000"
-            />
-          ) : (
-            <p>{comment.content}</p>
-          )}
-        </div>
-      </div>
-    );
-
+  if (loadingPost) {
     return (
-      <div className="post-view-comments-section">
-        <div className="post-view-comments-header">
-          <h3>Комментарии ({comments.length})</h3>
-        </div>
-
-        {isAuthenticated && user ? (
-          <form onSubmit={handleCreateComment} className="post-view-comment-form">
-            <textarea
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-              placeholder="Напишите комментарий..."
-              className="post-view-comment-input"
-              rows="3"
-              maxLength="2000"
-            />
-            <div className="post-view-comment-form-actions">
-              <button type="submit" className="post-view-comment-submit">
-                Отправить
-              </button>
-            </div>
-          </form>
-        ) : (
-          <div className="post-view-comments-login-prompt">
-            <p>Для добавления комментария необходимо<a href="/" onClick={(e) => { e.preventDefault(); login(); }}> войти</a> в систему.</p>
-          </div>
-        )}
-
-        <div className="post-view-comments-list">
-          {comments.length === 0 ? (
-            <p className="post-view-no-comments">Пока нет комментариев</p>
-          ) : (
-            comments.map(renderComment)
-          )}
-        </div>
+      <div className="post-view-wrapper">
+        <div className="post-view-loading">Загрузка объявления...</div>
       </div>
     );
-  };
-  return (
-    <>
-      {renderPost()}
-      {renderComments()}
-      {showChat && chatReceiverId && (
-        <Chat
-          receiverId={chatReceiverId}
-          receiverName={chatReceiverName}
-          postId={post.id}
-          onClose={handleCloseChat}
-        />
-      )}
-    </>
-  );
+  }
+
+  if (error) {
+    return (
+      <div className="post-view-wrapper">
+        <div className="post-view-error">{error}</div>
+      </div>
+    );
+  }
+
+  if (!post) {
+    return (
+      <div className="post-view-wrapper">
+        <div className="post-view-error">Объявление не найдено</div>
+      </div>
+    );
+  }
+
+  return renderPost();
 }
 
 export default PostViewBuyer;

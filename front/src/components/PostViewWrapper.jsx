@@ -9,7 +9,7 @@ import PostViewPublic from './PostViewPublic';
 function PostViewWrapper() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated, apiService, user } = useAuth();
+  const { isAuthenticated, apiService, user, login } = useAuth();
 
   const [post, setPost] = useState(null);
   const [comments, setComments] = useState([]);
@@ -173,6 +173,7 @@ function PostViewWrapper() {
               onUpdateComment={handleUpdateComment}
               onDeleteComment={handleDeleteComment}
               onPurchasePost={handlePurchasePost}
+              login={login}
             />
           )}
         </div>
